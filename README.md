@@ -162,3 +162,70 @@ sequenceDiagram
 
   ViewCartFacadeUseCase -->> Controller: 장바구니 상세 정보 반환
 ```
+
+# E-commerce ERDiagram
+
+```mermaid
+erDiagram
+  users {
+    long id
+    varchar name
+    int balance
+    datetime deletedAt
+  }
+
+  products {
+    long id
+    varchar name
+    long price
+    int stock
+    datetime deletedAt
+  }
+
+  orders {
+    long id
+    long userId
+    long totalPrice
+    varchar status
+    datetime orderedAt
+    datetime deletedAt
+  }
+
+  order_items {
+    long id
+    long orderId
+    long productId
+    int quantity
+    long price
+    datetime deletedAt
+  }
+
+  carts {
+    long id
+    long userId
+    datetime deletedAt
+  }
+
+  cart_items {
+    long id
+    long cartId
+    long productId
+    int quantity
+    datetime deletedAt
+  }
+
+  popular_products {
+    long id
+    long productId
+    int totalSold
+    datetime updatedAt
+  }
+
+  users ||--o{ orders : "has"
+  orders ||--o{ order_items : "contains"
+  products ||--o{ order_items : "is in"
+  users ||--o{ carts : "has"
+  carts ||--o{ cart_items : "contains"
+  products ||--o{ cart_items : "is in"
+  products ||--o{ popular_products : "is"
+```
