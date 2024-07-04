@@ -221,10 +221,10 @@ erDiagram
     datetime updatedAt
   }
 
+  users ||--|| carts : "has"
   users ||--o{ orders : "has"
   orders ||--o{ order_items : "contains"
   products ||--o{ order_items : "is in"
-  users ||--o{ carts : "has"
   carts ||--o{ cart_items : "contains"
   products ||--o{ cart_items : "is in"
   products ||--o{ popular_products : "is"
