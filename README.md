@@ -218,6 +218,7 @@ erDiagram
     long id
     long productId
     int totalSold
+    date soldDate
     datetime updatedAt
   }
 
