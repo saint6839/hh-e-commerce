@@ -8,4 +8,9 @@ export interface IUserRepository {
     id: number,
     entityManager?: EntityManager,
   ): Promise<UserEntity | null>;
+
+  update(
+    partialEntity: Partial<UserEntity> & { id: number },
+    entityManager?: EntityManager,
+  ): Promise<UserEntity>;
 }

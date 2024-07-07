@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IUserRepositoryToken } from 'src/user/domain/interface/repository/user.repository.interface';
-import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
-import { UserDto } from 'src/user/presentation/dto/response/user.dto';
 import {
   NOT_FOUND_USER_ERROR,
-  ReadUserUseCase,
-} from 'src/user/usecase/read-user.usecase';
+  UserEntity,
+} from 'src/user/infrastructure/entity/user.entity';
+import { UserDto } from 'src/user/presentation/dto/response/user.dto';
+import { ReadUserUseCase } from 'src/user/usecase/read-user.usecase';
 
 describe('ReadUserUseCase Unit Test', () => {
   let readUserUseCase: ReadUserUseCase;

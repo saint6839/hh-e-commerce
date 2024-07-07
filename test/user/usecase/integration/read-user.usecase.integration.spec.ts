@@ -5,8 +5,10 @@ import {
   IReadUserUsecase,
   IReadUserUsecaseToken,
 } from 'src/user/domain/interface/usecase/read-user.usecase.interface';
-import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
-import { NOT_FOUND_USER_ERROR } from 'src/user/usecase/read-user.usecase';
+import {
+  NOT_FOUND_USER_ERROR,
+  UserEntity,
+} from 'src/user/infrastructure/entity/user.entity';
 import { setupTestingModule } from 'test/common/setup';
 import { Repository } from 'typeorm';
 

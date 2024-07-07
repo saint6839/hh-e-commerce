@@ -1,6 +1,8 @@
 import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
 import { UserDto } from 'src/user/presentation/dto/response/user.dto';
 
+export const INVALID_CHARGE_AMOUNT_ERROR = '충전 금액은 0보다 커야 합니다.';
+
 export class User {
   private _id: number;
   private _name: string;
@@ -22,6 +24,14 @@ export class User {
 
   get balance(): number {
     return this._balance;
+  }
+
+  public charge(amount: number): User {
+    if (amount <= 0) {
+      throw new Error(INVALID_CHARGE_AMOUNT_ERROR);
+    }
+    this._balance += amount;
+    return this;
   }
 
   static fromEntity(entity: UserEntity): User {

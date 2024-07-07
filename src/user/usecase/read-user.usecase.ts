@@ -5,9 +5,8 @@ import {
   IUserRepositoryToken,
 } from '../domain/interface/repository/user.repository.interface';
 import { IReadUserUsecase } from '../domain/interface/usecase/read-user.usecase.interface';
+import { NOT_FOUND_USER_ERROR } from '../infrastructure/entity/user.entity';
 import { UserDto } from '../presentation/dto/response/user.dto';
-
-export const NOT_FOUND_USER_ERROR = '존재하지 않는 사용자입니다.';
 
 @Injectable()
 export class ReadUserUseCase implements IReadUserUsecase {

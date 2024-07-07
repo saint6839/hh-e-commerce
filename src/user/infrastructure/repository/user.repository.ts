@@ -26,4 +26,14 @@ export class UserRepository
       entityManager,
     );
   }
+
+  async update(
+    partialEntity: Partial<UserEntity> & { id: number },
+    entityManager?: EntityManager,
+  ): Promise<UserEntity> {
+    return this.executeQuery(async (repo) => {
+      await repo.update(partialEntity.id, partialEntity);
+      return repo.findOneOrFail({ where: { id: partialEntity.id } });
+    }, entityManager);
+  }
 }
