@@ -128,43 +128,6 @@ sequenceDiagram
   end
 ```
 
-```mermaid
-sequenceDiagram
-  Controller ->> OrderPaymentFacadeUseCase: 주문 / 결제 요청 (userId, 상품 목록)
-  OrderPaymentFacadeUseCase ->> ValidateStockUseCase: 상품 재고 확인 요청 (상품 목록)
-  ValidateStockUseCase ->> Database: 상품 재고 조회 쿼리
-  Database -->> ValidateStockUseCase: 상품 재고 데이터 반환
-  ValidateStockUseCase -->> OrderPaymentFacadeUseCase: 재고 확인 결과 반환
-
-  alt 재고 충분함
-    OrderPaymentFacadeUseCase ->> ValidateBalanceUseCase: 사용자 잔액 확인 요청 (userId, 총 금액)
-    ValidateBalanceUseCase ->> Database: 사용자 잔액 조회 쿼리
-    Database -->> ValidateBalanceUseCase: 사용자 잔액 데이터 반환
-    ValidateBalanceUseCase -->> OrderPaymentFacadeUseCase: 잔액 확인 결과 반환
-
-    alt 잔액 충분함
-      OrderPaymentFacadeUseCase ->> DeductBalanceUseCase: 사용자 잔액 차감 요청 (userId, 총 금액)
-      DeductBalanceUseCase ->> Database: 사용자 잔액 차감 쿼리
-      Database -->> DeductBalanceUseCase: 잔액 차감 결과 반환
-      DeductBalanceUseCase -->> OrderPaymentFacadeUseCase: 잔액 차감 완료
-
-      OrderPaymentFacadeUseCase ->> PlaceOrderUseCase: 주문 생성 요청 (userId, 상품 목록)
-      PlaceOrderUseCase ->> Database: 주문 생성 쿼리
-      Database -->> PlaceOrderUseCase: 주문 생성 결과 반환
-      PlaceOrderUseCase -->> OrderPaymentFacadeUseCase: 주문 생성 완료
-
-      OrderPaymentFacadeUseCase ->> ExternalDataPlatform: 주문 데이터 전송
-      ExternalDataPlatform -->> OrderPaymentFacadeUseCase: 데이터 전송 확인
-
-      OrderPaymentFacadeUseCase -->> Controller: 주문 / 결제 완료 반환
-    else 잔액 부족
-      OrderPaymentFacadeUseCase -->> Controller: 잔액 부족 오류 반환
-    end
-  else 재고 부족
-    OrderPaymentFacadeUseCase -->> Controller: 재고 부족 오류 반환
-  end
-```
-
 ### 🛒장바구니 API
 
 **장바구니 상품 추가 API**
