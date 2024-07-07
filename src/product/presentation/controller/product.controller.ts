@@ -1,10 +1,14 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
+import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
 import { ProductDto } from '../dto/response/product.dto';
 
+@ApiTags('상품 관련 API')
 @Controller('/api/v1/products')
 export class ProductController {
   @Get('/:productId')
+  @ApiSwaggerResponse(200, '특정 상품 조회 성공', ProductDto)
   async getProduct(
     @Param('productId') productId: number,
   ): Promise<ApiResponseDto<ProductDto>> {
@@ -18,6 +22,7 @@ export class ProductController {
   }
 
   @Get('/all')
+  @ApiSwaggerResponse(200, '전체 상품 목록 조회 성공', [ProductDto])
   async getAllProducts(): Promise<ApiResponseDto<ProductDto[]>> {
     const mockProducts = [
       new ProductDto(1, '상품 1', 10000, 100),
@@ -28,6 +33,7 @@ export class ProductController {
   }
 
   @Get('/popular')
+  @ApiSwaggerResponse(200, '인기 상품 목록 조회 성공', [ProductDto])
   async getPopularProducts(): Promise<ApiResponseDto<ProductDto[]>> {
     const mockPopularProducts = [
       new ProductDto(1, '인기 상품 1', 15000, 40),

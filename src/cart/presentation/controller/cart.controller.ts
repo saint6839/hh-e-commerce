@@ -1,13 +1,21 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
+import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 import { AddCartProductDto } from '../dto/request/add-cart-product.dto';
 import { CartItemDto } from '../dto/response/cart-item.dto';
 import { CartDto } from '../dto/response/cart.dto';
 
+@ApiTags('장바구니 관련 API')
 @Controller('/api/v1/carts')
 export class CartController {
   @Post()
+  @ApiSwaggerResponse(
+    201,
+    '상품이 장바구니에 성공적으로 추가되었습니다.',
+    CartDto,
+  )
   async addProduct(
     @Body() dto: AddCartProductDto,
   ): Promise<ApiResponseDto<CartDto>> {
@@ -25,6 +33,7 @@ export class CartController {
   }
 
   @Delete('/:userId/:productId')
+  @ApiSwaggerResponse(204, '상품이 장바구니에서 성공적으로 삭제되었습니다.')
   async deleteProduct(
     @Param('userId') userId: number,
     @Param('productId') productId: number,
@@ -36,6 +45,7 @@ export class CartController {
   }
 
   @Get('/:userId')
+  @ApiSwaggerResponse(200, '장바구니 조회 성공', CartDto)
   async browse(
     @Param('userId') userId: number,
   ): Promise<ApiResponseDto<CartDto>> {
