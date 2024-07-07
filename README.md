@@ -73,6 +73,61 @@ sequenceDiagram
 
 ### 💸주문 / 결제 API
 
+#### 주문 생성
+
+```mermaid
+sequenceDiagram
+  Client ->> OrderController: POST /api/v1/orders (OrderDto)
+  OrderController ->> CreateOrderUseCase: 주문 생성 요청
+  CreateOrderUseCase ->> ValidateStockUseCase: 상품 재고 확인 요청
+  ValidateStockUseCase ->> Database: 상품 재고 조회 쿼리
+  Database -->> ValidateStockUseCase: 상품 재고 데이터 반환
+  ValidateStockUseCase -->> CreateOrderUseCase: 재고 확인 결과 반환
+  alt 재고 충분함
+    CreateOrderUseCase ->> Database: 주문 생성 쿼리
+    Database -->> CreateOrderUseCase: 주문 생성 결과 반환
+    CreateOrderUseCase -->> OrderController: OrderResultDto 반환
+    OrderController -->> Client: 201 Created (OrderResultDto)
+  else 재고 부족
+    CreateOrderUseCase -->> OrderController: 재고 부족 오류
+    OrderController -->> Client: 400 Bad Request (재고 부족 오류)
+  end
+```
+
+#### 결제 처리
+
+```mermaid
+sequenceDiagram
+  Contoller ->> ProcessPaymentFacadeUseCase: 결제 처리 요청
+  ProcessPaymentFacadeUseCase ->> ValidateOrderUseCase: 주문 유효성 확인 요청
+  ValidateOrderUseCase ->> Database: 주문 정보 조회 쿼리
+  Database -->> ValidateOrderUseCase: 주문 정보 반환
+  ValidateOrderUseCase -->> ProcessPaymentFacadeUseCase: 주문 유효성 확인 결과
+  alt 주문 유효함
+    ProcessPaymentFacadeUseCase ->> ValidateBalanceUseCase: 사용자 잔액 확인 요청
+    ValidateBalanceUseCase ->> Database: 사용자 잔액 조회 쿼리
+    Database -->> ValidateBalanceUseCase: 사용자 잔액 데이터 반환
+    ValidateBalanceUseCase -->> ProcessPaymentFacadeUseCase: 잔액 확인 결과 반환
+    alt 잔액 충분함
+      ProcessPaymentFacadeUseCase ->> DeductBalanceUseCase: 사용자 잔액 차감 요청
+      DeductBalanceUseCase ->> Database: 사용자 잔액 차감 쿼리
+      Database -->> DeductBalanceUseCase: 잔액 차감 결과 반환
+      DeductBalanceUseCase -->> ProcessPaymentFacadeUseCase: 잔액 차감 완료
+      ProcessPaymentFacadeUseCase ->> Database: 결제 정보 저장 쿼리
+      Database -->> ProcessPaymentFacadeUseCase: 결제 정보 저장 결과
+      ProcessPaymentFacadeUseCase ->> UpdateOrderStatusUseCase: 주문 상태 업데이트 요청
+      UpdateOrderStatusUseCase ->> Database: 주문 상태 업데이트 쿼리
+      Database -->> UpdateOrderStatusUseCase: 주문 상태 업데이트 결과
+      UpdateOrderStatusUseCase -->> ProcessPaymentFacadeUseCase: 주문 상태 업데이트 완료
+      ProcessPaymentFacadeUseCase -->> Contoller: PaymentResultDto 반환
+    else 잔액 부족
+      ProcessPaymentFacadeUseCase -->> Contoller: 잔액 부족 오류
+    end
+  else 주문 유효하지 않음
+    ProcessPaymentFacadeUseCase -->> Contoller: 유효하지 않은 주문 오류
+  end
+```
+
 ```mermaid
 sequenceDiagram
   Controller ->> OrderPaymentFacadeUseCase: 주문 / 결제 요청 (userId, 상품 목록)
@@ -186,7 +241,7 @@ erDiagram
     long id
     long userId
     long totalPrice
-    varchar status
+    enum status
     datetime orderedAt
     datetime deletedAt
   }
@@ -197,6 +252,16 @@ erDiagram
     long productId
     int quantity
     long price
+    datetime deletedAt
+  }
+
+  payments {
+    long id
+    long orderId
+    long amount
+    enum paymentMethod
+    enum status
+    datetime paidAt
     datetime deletedAt
   }
 
@@ -229,4 +294,5 @@ erDiagram
   carts ||--o{ cart_items : "contains"
   products ||--o{ cart_items : "is in"
   products ||--o{ popular_products : "is"
+  orders ||--|| payments : "has"
 ```
