@@ -16,6 +16,15 @@ export class CartRepository
   ) {
     super(cartRepository);
   }
+  async delete(id: number, entityManager?: EntityManager): Promise<void> {
+    await this.executeQuery(
+      (repo) =>
+        repo.delete({
+          id,
+        }),
+      entityManager,
+    );
+  }
 
   async findByUserId(
     userId: number,

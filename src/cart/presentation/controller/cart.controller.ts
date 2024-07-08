@@ -12,6 +12,10 @@ import {
   IAddCartUseCase,
   IAddCartUseCaseToken,
 } from 'src/cart/domain/interface/usecase/add-cart.usecase.interface';
+import {
+  IDeleteCartUsecase,
+  IDeleteCartUsecaseToken,
+} from 'src/cart/domain/interface/usecase/delete-cart.usecase.interface';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
 import { AddCartProductDetailDto } from '../dto/request/add-cart-product-detail.dto';
@@ -23,6 +27,8 @@ export class CartController {
   constructor(
     @Inject(IAddCartUseCaseToken)
     private readonly addCartUseCase: IAddCartUseCase,
+    @Inject(IDeleteCartUsecaseToken)
+    private readonly deleteCartUseCase: IDeleteCartUsecase,
   ) {}
 
   @Post()
@@ -41,23 +47,23 @@ export class CartController {
     );
   }
 
-  @Delete('/:userId/:productId')
+  @Delete('/:cartId')
   @ApiSwaggerResponse(204, '상품이 장바구니에서 성공적으로 삭제되었습니다.')
   async deleteProduct(
-    @Param('userId') userId: number,
-    @Param('productId') productId: number,
+    @Param('cartId') cartId: number,
   ): Promise<ApiResponseDto<void>> {
     return new ApiResponseDto<void>(
       true,
       '상품이 장바구니에서 성공적으로 삭제되었습니다.',
+      await this.deleteCartUseCase.execute(cartId),
     );
   }
 
   @Get('/:userId')
-  @ApiSwaggerResponse(200, '장바구니 조회 성공', CartDto)
+  @ApiSwaggerResponse(200, '장바구니 조회 성공', [CartDto])
   async browse(
     @Param('userId') userId: number,
-  ): Promise<ApiResponseDto<CartDto | null>> {
-    return new ApiResponseDto<CartDto | null>(true, '장바구니 조회 성공', null);
+  ): Promise<ApiResponseDto<CartDto[]>> {
+    return new ApiResponseDto<CartDto[]>(true, '장바구니 조회 성공', []);
   }
 }

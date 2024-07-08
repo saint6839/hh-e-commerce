@@ -12,4 +12,6 @@ export interface ICartRepository {
     entity: CartEntity,
     entityManager?: EntityManager,
   ): Promise<CartEntity>;
+
+  delete(id: number, entityManager?: EntityManager): Promise<void>;
 }
