@@ -11,12 +11,6 @@ export interface IProductRepository {
 
   findAll(entityManager?: EntityManager): Promise<ProductEntity[]>;
 
-  updateStock(
-    id: number,
-    quantity: number,
-    entityManager?: EntityManager,
-  ): Promise<ProductEntity>;
-
   findByIdWithLock(
     id: number,
     entityManager?: EntityManager,

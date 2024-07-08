@@ -41,17 +41,6 @@ export class ProductRepository
     );
   }
 
-  async updateStock(
-    id: number,
-    quantity: number,
-    entityManager?: EntityManager | undefined,
-  ): Promise<ProductEntity> {
-    return this.executeQuery(async (repo) => {
-      await repo.update({ id, deletedAt: IsNull() }, { stock: quantity });
-      return repo.findOneOrFail({ where: { id } });
-    }, entityManager);
-  }
-
   async findByIdWithLock(
     id: number,
     entityManager?: EntityManager,

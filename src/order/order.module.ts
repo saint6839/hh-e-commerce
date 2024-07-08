@@ -5,7 +5,7 @@ import { ProductModule } from 'src/product/product.module';
 import { IOrderItemRepositoryToken } from './domain/interface/repository/order-item.repository.interface';
 import { IOrderRepositoryToken } from './domain/interface/repository/order.repository.interface';
 import { ICancelOrderUseCaseToken } from './domain/interface/usecase/cancel-order.usecase.interface';
-import { ICreateOrderUseCaseToken } from './domain/interface/usecase/create-order.usecase.interface';
+import { ICreateOrderFacadeUseCaseToken } from './domain/interface/usecase/create-order-facade.usecase.interface';
 import { OrderEventListener } from './listener/order-event.listener';
 import { OrderController } from './presentation/controller/order.controller';
 import { OrderItemEntity } from './repository/entity/order-item.entity';
@@ -13,6 +13,8 @@ import { OrderEntity } from './repository/entity/order.entity';
 import { OrderItemRepository } from './repository/repository/order-item.repository';
 import { OrderRepository } from './repository/repository/order.repository';
 import { CancelOrderUseCase } from './usecase/cancel-order.usecase';
+import { CreateOrderFacadeUseCase } from './usecase/create-order-facade.usecase';
+import { ICreateOrderUseCaseToken } from './domain/interface/usecase/create-order.uscase.interface';
 import { CreateOrderUseCase } from './usecase/create-order.usecase';
 
 @Module({
@@ -32,12 +34,16 @@ import { CreateOrderUseCase } from './usecase/create-order.usecase';
       useClass: OrderItemRepository,
     },
     {
-      provide: ICreateOrderUseCaseToken,
-      useClass: CreateOrderUseCase,
+      provide: ICreateOrderFacadeUseCaseToken,
+      useClass: CreateOrderFacadeUseCase,
     },
     {
       provide: ICancelOrderUseCaseToken,
       useClass: CancelOrderUseCase,
+    },
+    {
+      provide: ICreateOrderUseCaseToken,
+      useClass: CreateOrderUseCase,
     },
     OrderEventListener,
   ],

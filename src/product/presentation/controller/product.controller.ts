@@ -7,6 +7,11 @@ import {
   IBrowseProductsUseCase,
   IBrowseProductsUseCaseToken,
 } from 'src/product/domain/interface/usecase/browse-products.usecase.interface';
+import {
+  IReadProductUseCase,
+  IReadProductUseCaseToken,
+} from 'src/product/domain/interface/usecase/read-product.usecase.interface';
+import { ProductOptionDto } from '../dto/response/product-option.dto';
 import { ProductDto } from '../dto/response/product.dto';
 
 @ApiTags('상품 관련 API')
@@ -15,6 +20,8 @@ export class ProductController {
   constructor(
     @Inject(IBrowseProductsUseCaseToken)
     private readonly browseProductsUseCase: IBrowseProductsUseCase,
+    @Inject(IReadProductUseCaseToken)
+    private readonly readProductUseCase: IReadProductUseCase,
   ) {}
 
   @Get('/all')
@@ -32,23 +39,35 @@ export class ProductController {
   async getProduct(
     @Param('productId') productId: number,
   ): Promise<ApiResponseDto<ProductDto>> {
-    const mockProduct = new ProductDto(
-      productId,
-      '상품 ' + productId,
-      10000,
-      100,
-      ProductStatus.ACTIVATE,
+    return new ApiResponseDto(
+      true,
+      '특정 상품 조회 성공',
+      await this.readProductUseCase.execute(productId),
     );
-    return new ApiResponseDto(true, '특정 상품 조회 성공', mockProduct);
   }
 
   @Get('/popular')
   @ApiSwaggerResponse(200, '인기 상품 목록 조회 성공', [ProductDto])
   async getPopularProducts(): Promise<ApiResponseDto<ProductDto[]>> {
     const mockPopularProducts = [
-      new ProductDto(1, '인기 상품 1', 15000, 40, ProductStatus.ACTIVATE),
-      new ProductDto(2, '인기 상품 2', 25000, 30, ProductStatus.ACTIVATE),
-      new ProductDto(3, '인기 상품 3', 35000, 20, ProductStatus.ACTIVATE),
+      new ProductDto(
+        1,
+        '상품 1',
+        [new ProductOptionDto(1, '옵션 1', 10000, 100, 1)],
+        ProductStatus.ACTIVATE,
+      ),
+      new ProductDto(
+        2,
+        '상품 2',
+        [new ProductOptionDto(2, '옵션 2', 20000, 200, 2)],
+        ProductStatus.ACTIVATE,
+      ),
+      new ProductDto(
+        3,
+        '상품 3',
+        [new ProductOptionDto(3, '옵션 3', 30000, 300, 3)],
+        ProductStatus.ACTIVATE,
+      ),
     ];
     return new ApiResponseDto(
       true,

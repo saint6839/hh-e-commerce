@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { OrderProductInfoDto } from './order-product-info.dto';
 
-export class CreateOrderDto {
+export class CreateOrderFacadeDto {
   @IsNumber()
   @ApiProperty({ example: 1, description: '사용자 ID' })
   readonly userId: number;
@@ -23,19 +23,19 @@ export class CreateOrderDto {
     isArray: true,
     example: [
       {
-        productId: 1,
+        productOptionId: 1,
         quantity: 2,
       },
       {
-        productId: 2,
+        productOptionId: 2,
         quantity: 1,
       },
     ],
   })
-  readonly products: OrderProductInfoDto[];
+  readonly productOptions: OrderProductInfoDto[];
 
-  constructor(userId: number, products: OrderProductInfoDto[]) {
+  constructor(userId: number, productOptions: OrderProductInfoDto[]) {
     this.userId = userId;
-    this.products = products;
+    this.productOptions = productOptions;
   }
 }

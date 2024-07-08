@@ -15,7 +15,7 @@ export class OrderItemEntity {
   orderId: number;
 
   @Column()
-  productId: number;
+  productOptionId: number;
 
   @Column()
   productName: string;
@@ -31,14 +31,14 @@ export class OrderItemEntity {
 
   static of(
     orderId: number,
-    productId: number,
+    productOptionId: number,
     productName: string,
     quantity: number,
     totalPriceAtOrder: number,
   ): OrderItemEntity {
     const orderItem = new OrderItemEntity();
     orderItem.orderId = orderId;
-    orderItem.productId = productId;
+    orderItem.productOptionId = productOptionId;
     orderItem.productName = productName;
     orderItem.quantity = quantity;
     orderItem.totalPriceAtOrder = totalPriceAtOrder;
@@ -49,7 +49,7 @@ export class OrderItemEntity {
     return new OrderItem(
       entity.id,
       entity.orderId,
-      entity.productId,
+      entity.productOptionId,
       entity.productName,
       entity.quantity,
       entity.totalPriceAtOrder,

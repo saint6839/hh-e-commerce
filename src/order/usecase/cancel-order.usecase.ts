@@ -56,12 +56,11 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
       throw new Error(NOT_FOUND_ORDER_ERROR);
     }
 
-    const order = Order.fromEntity(orderEntity);
-    return order.isCancelable() ? order : null;
+    return null;
   }
 
   private async cancelOrder(order: Order, entityManager): Promise<void> {
-    order.cancel();
+    // order.cancel();
     await this.orderRepository.updateStatus(
       order.id,
       order.status,
@@ -87,7 +86,7 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
       orderId,
       entityManager,
     );
-    return orderItemEntities.map((entity) => OrderItem.fromEntity(entity));
+    return [];
   }
 
   private async restoreStockForOrderItem(
@@ -99,12 +98,7 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
       entityManager,
     );
     if (product) {
-      product.increaseStock(orderItem.quantity);
-      await this.productRepository.updateStock(
-        product.id,
-        product.stock,
-        entityManager,
-      );
+      return;
     }
   }
 
@@ -112,10 +106,6 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
     productId: number,
     entityManager,
   ): Promise<Product | null> {
-    const productEntity = await this.productRepository.findByIdWithLock(
-      productId,
-      entityManager,
-    );
-    return productEntity ? Product.fromEntity(productEntity) : null;
+    return null;
   }
 }

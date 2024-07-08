@@ -11,12 +11,6 @@ export class ProductEntity {
   @Column()
   name: string;
 
-  @Column()
-  price: number;
-
-  @Column()
-  stock: number;
-
   @Column({
     type: 'enum',
     enum: ProductStatus,
@@ -25,5 +19,5 @@ export class ProductEntity {
   status: ProductStatus;
 
   @Column({ type: 'timestamp', nullable: true, default: null })
-  deletedAt: Date | null;
+  deletedAt?: Date | null;
 }

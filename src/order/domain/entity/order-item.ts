@@ -1,7 +1,5 @@
 import { OrderItemDto } from 'src/order/presentation/dto/response/order-item.dto';
 import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
-import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
-import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 
 export class OrderItem {
   private _id: number;
@@ -59,49 +57,20 @@ export class OrderItem {
     return new OrderItem(
       entity.id,
       entity.orderId,
-      entity.productId,
+      entity.productOptionId,
       entity.productName,
       entity.quantity,
       entity.totalPriceAtOrder,
     );
   }
 
-  static fromDto(dto: OrderItemDto) {
-    return new OrderItem(
-      dto.id,
-      dto.orderId,
-      dto.product.id,
-      dto.product.name,
-      dto.quantity,
-      dto.price,
-    );
-  }
-
   toDto(): OrderItemDto {
-    const productWithoutStock: Omit<ProductDto, 'stock'> = {
-      id: this._productId,
-      name: this._productName,
-      price: this.pricePerItem,
-      status: ProductStatus.ACTIVATE,
-    };
-
     return new OrderItemDto(
       this._id,
       this._orderId,
-      productWithoutStock,
+      this._productId,
       this._quantity,
       this._totalPriceAtOrder,
     );
-  }
-
-  toEntity(): OrderItemEntity {
-    const entity = new OrderItemEntity();
-    entity.id = this._id;
-    entity.orderId = this._orderId;
-    entity.productId = this._productId;
-    entity.productName = this._productName;
-    entity.quantity = this._quantity;
-    entity.totalPriceAtOrder = this._totalPriceAtOrder;
-    return entity;
   }
 }

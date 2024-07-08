@@ -1,8 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, Min } from 'class-validator';
-import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
-
-type ProductWithoutStock = Omit<ProductDto, 'stock'>;
 
 export class OrderItemDto {
   @ApiProperty({ example: 1, description: '주문 항목 ID' })
@@ -13,9 +10,9 @@ export class OrderItemDto {
   @IsNumber()
   readonly orderId: number;
 
-  @ApiProperty({ type: ProductDto, description: '상품 정보' })
+  @ApiProperty({ example: 1, description: '상품 옵션 ID' })
   @IsNumber()
-  readonly product: ProductWithoutStock;
+  readonly productOptionId: number;
 
   @ApiProperty({ example: 2, description: '주문 수량' })
   @IsNumber()
@@ -24,19 +21,19 @@ export class OrderItemDto {
 
   @ApiProperty({ example: 10000, description: '상품 가격' })
   @IsNumber()
-  readonly price: number;
+  readonly totalPriceAtOrder: number;
 
   constructor(
     id: number,
     orderId: number,
-    product: ProductWithoutStock,
+    productOptionId: number,
     quantity: number,
-    price: number,
+    totalPriceAtOrder: number,
   ) {
     this.id = id;
     this.orderId = orderId;
-    this.product = product;
+    this.productOptionId = productOptionId;
     this.quantity = quantity;
-    this.price = price;
+    this.totalPriceAtOrder = totalPriceAtOrder;
   }
 }

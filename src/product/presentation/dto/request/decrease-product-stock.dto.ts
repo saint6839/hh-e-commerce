@@ -1,14 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Min } from 'class-validator';
-
-export class OrderProductInfoDto {
+import { IsNumber } from 'class-validator';
+export class DecreaseProductStockDto {
+  @ApiProperty({ example: 1 })
   @IsNumber()
-  @ApiProperty({ example: 1, description: '상품 옵션 ID' })
   readonly productOptionId: number;
 
+  @ApiProperty({ example: 1 })
   @IsNumber()
-  @Min(1)
-  @ApiProperty({ example: 1, description: '주문 수량' })
   readonly quantity: number;
 
   constructor(productOptionId: number, quantity: number) {

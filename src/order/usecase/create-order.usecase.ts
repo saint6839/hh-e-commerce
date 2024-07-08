@@ -1,13 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Product } from 'src/product/domain/entity/product';
+import {
+  IProductOptionRepository,
+  IProductOptionRepositoryToken,
+} from 'src/product/domain/interface/repository/product-option.repository.interface';
 import {
   IProductRepository,
   IProductRepositoryToken,
 } from 'src/product/domain/interface/repository/product.repository.interface';
+import { NOT_FOUND_PRODUCT_OPTION_ERROR } from 'src/product/infrastructure/entity/product-option.entity';
 import { NOT_FOUND_PRODUCT_ERROR } from 'src/product/infrastructure/entity/product.entity';
 import { DataSource, EntityManager } from 'typeorm';
-import { Order } from '../domain/entity/order';
 import { OrderItem } from '../domain/entity/order-item';
 import {
   IOrderItemRepository,
@@ -17,139 +19,115 @@ import {
   IOrderRepository,
   IOrderRepositoryToken,
 } from '../domain/interface/repository/order.repository.interface';
-import { ICreateOrderUseCase } from '../domain/interface/usecase/create-order.usecase.interface';
-import { CreateOrderDto } from '../presentation/dto/request/create-order.dto';
+import { ICreateOrderFacadeUseCase } from '../domain/interface/usecase/create-order-facade.usecase.interface';
+import { CreateOrderFacadeDto } from '../presentation/dto/request/create-order-facade.dto';
 import { OrderDto } from '../presentation/dto/response/order-result.dto';
 import { OrderItemEntity } from '../repository/entity/order-item.entity';
 import { OrderEntity } from '../repository/entity/order.entity';
 
 @Injectable()
-export class CreateOrderUseCase implements ICreateOrderUseCase {
+export class CreateOrderUseCase implements ICreateOrderFacadeUseCase {
   constructor(
     @Inject(IProductRepositoryToken)
     private readonly productRepository: IProductRepository,
+    @Inject(IProductOptionRepositoryToken)
+    private readonly productOptionRepository: IProductOptionRepository,
     @Inject(IOrderRepositoryToken)
     private readonly orderRepository: IOrderRepository,
     @Inject(IOrderItemRepositoryToken)
     private readonly orderItemRepository: IOrderItemRepository,
-    private dataSource: DataSource,
-    private eventEmitter: EventEmitter2,
+    private readonly dataSource: DataSource,
   ) {}
 
-  async execute(dto: CreateOrderDto): Promise<OrderDto> {
-    return this.dataSource.transaction(async (transactionalEntityManager) => {
-      const products = await this.findValidateProducts(
-        dto,
-        transactionalEntityManager,
-      );
-      const order = await this.createOrder(
-        dto,
-        products,
-        transactionalEntityManager,
-      );
-      await this.createOrderItems(
-        dto,
-        order,
-        products,
-        transactionalEntityManager,
-      );
-      await this.updateProductStocks(products, transactionalEntityManager);
-      this.eventEmitter.emit('order.created', { orderId: order.id });
-      return order.toDto();
-    });
-  }
+  async execute(
+    dto: CreateOrderFacadeDto,
+    entityManager?: EntityManager,
+  ): Promise<OrderDto> {
+    const transactionCallback = async (
+      transactionEntityManager: EntityManager,
+    ) => {
+      let totalPrice = 0;
+      const orderItems: OrderItemEntity[] = [];
 
-  private async findValidateProducts(
-    dto: CreateOrderDto,
-    entityManager: EntityManager,
-  ): Promise<Product[]> {
-    const { products: orderProducts } = dto;
-    return await Promise.all(
-      orderProducts.map(async (orderProduct) => {
-        const productEntity = await this.productRepository.findByIdWithLock(
-          orderProduct.productId,
-          entityManager,
+      for (const productOption of dto.productOptions) {
+        const productOptionEntity = await this.findProductOption(
+          productOption.productOptionId,
+          transactionEntityManager,
         );
-        if (!productEntity) {
-          throw new Error(
-            NOT_FOUND_PRODUCT_ERROR + ': ' + orderProduct.productId,
+        const productEntity = await this.findProduct(
+          productOptionEntity.productId,
+          transactionEntityManager,
+        );
+
+        const itemTotalPrice =
+          productOptionEntity.price * productOption.quantity;
+        totalPrice += itemTotalPrice;
+
+        orderItems.push(
+          OrderItemEntity.of(
+            0, // 임시 orderId, 실제 orderId는 나중에 설정됩니다.
+            productOptionEntity.id,
+            productEntity.name,
+            productOption.quantity,
+            itemTotalPrice,
+          ),
+        );
+      }
+
+      const orderEntity = await this.orderRepository.create(
+        OrderEntity.of(dto.userId, totalPrice),
+        transactionEntityManager,
+      );
+
+      const createdOrderItems = await Promise.all(
+        orderItems.map((item) => {
+          item.orderId = orderEntity.id;
+          return this.orderItemRepository.create(
+            item,
+            transactionEntityManager,
           );
-        }
-        const product = Product.fromEntity(productEntity);
-        product.decreaseStock(orderProduct.quantity);
-        return product;
-      }),
-    );
+        }),
+      );
+
+      return new OrderDto(
+        orderEntity.id,
+        orderEntity.userId,
+        orderEntity.totalPrice,
+        orderEntity.status,
+        orderEntity.orderedAt,
+        createdOrderItems.map((item) => OrderItem.fromEntity(item).toDto()),
+      );
+    };
+
+    if (entityManager) {
+      return await transactionCallback(entityManager);
+    } else {
+      return await this.dataSource.transaction(transactionCallback);
+    }
   }
 
-  private async createOrder(
-    dto: CreateOrderDto,
-    products: Product[],
+  private async findProductOption(
+    productOptionId: number,
     entityManager: EntityManager,
-  ): Promise<Order> {
-    const { userId, products: orderProducts } = dto;
-    const totalPrice = this.calculateTotalPrice(products, orderProducts);
-    const orderEntity = OrderEntity.of(userId, totalPrice);
-    const createdOrderEntity = await this.orderRepository.create(
-      orderEntity,
+  ) {
+    const productOptionEntity = await this.productOptionRepository.findById(
+      productOptionId,
       entityManager,
     );
-    return Order.fromEntity(createdOrderEntity, []);
+    if (!productOptionEntity) {
+      throw new Error(NOT_FOUND_PRODUCT_OPTION_ERROR + ': ' + productOptionId);
+    }
+    return productOptionEntity;
   }
 
-  private async createOrderItems(
-    dto: CreateOrderDto,
-    order: Order,
-    products: Product[],
-    entityManager: EntityManager,
-  ): Promise<void> {
-    const { products: orderProducts } = dto;
-    const orderItemEntities = products.map((product, index) => {
-      const quantity = orderProducts[index].quantity;
-      const totalPriceAtOrder = product.price * quantity;
-      return OrderItemEntity.of(
-        order.id,
-        product.id,
-        product.name,
-        quantity,
-        totalPriceAtOrder,
-      );
-    });
-
-    const createdOrderItemEntities = await Promise.all(
-      orderItemEntities.map(async (orderItemEntity) => {
-        const entity = await this.orderItemRepository.create(
-          orderItemEntity,
-          entityManager,
-        );
-        return OrderItem.fromEntity(entity);
-      }),
+  private async findProduct(productId: number, entityManager: EntityManager) {
+    const productEntity = await this.productRepository.findById(
+      productId,
+      entityManager,
     );
-
-    order.addOrderItems(createdOrderItemEntities);
-  }
-
-  private async updateProductStocks(
-    products: Product[],
-    entityManager: EntityManager,
-  ): Promise<void> {
-    await Promise.all(
-      products.map((product) =>
-        this.productRepository.updateStock(
-          product.id,
-          product.stock,
-          entityManager,
-        ),
-      ),
-    );
-  }
-
-  private calculateTotalPrice(
-    products: Product[],
-    orderProducts: CreateOrderDto['products'],
-  ): number {
-    return products.reduce((total, product, index) => {
-      return total + product.price * orderProducts[index].quantity;
-    }, 0);
+    if (!productEntity) {
+      throw new Error(NOT_FOUND_PRODUCT_ERROR + ': ' + productId);
+    }
+    return productEntity;
   }
 }

@@ -231,20 +231,14 @@ erDiagram
   carts {
     long id
     long userId
-    datetime deletedAt
-  }
-
-  cart_items {
-    long id
-    long cartId
-    long productId
+    long productOptionId
     int quantity
     datetime deletedAt
   }
 
   popular_products {
     long id
-    long productId
+    long productOptionId
     int totalSold
     date soldDate
     datetime updatedAt
