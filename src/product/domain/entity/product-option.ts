@@ -1,4 +1,5 @@
 import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-option.entity';
+import { ProductOptionDto } from 'src/product/presentation/dto/response/product-option.dto';
 
 export const NOT_ENOUGH_STOCK_ERROR = '재고가 부족합니다.';
 
@@ -61,6 +62,16 @@ export class ProductOption {
       entity.price,
       entity.stock,
       entity.productId,
+    );
+  }
+
+  toDto(): ProductOptionDto {
+    return new ProductOptionDto(
+      this._id,
+      this._name,
+      this._price,
+      this._stock,
+      this._productId,
     );
   }
 }

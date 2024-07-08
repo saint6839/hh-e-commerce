@@ -3,14 +3,18 @@ import { IsNumber, Min } from 'class-validator';
 export class AddCartProductDetailDto {
   @IsNumber()
   @ApiProperty({ example: 1 })
-  readonly productId: number;
+  readonly userId: number;
+  @IsNumber()
+  @ApiProperty({ example: 1 })
+  readonly productOptionId: number;
   @IsNumber()
   @Min(1)
   @ApiProperty({ example: 1 })
   readonly quantity: number;
 
-  constructor(productId: number, quantity: number) {
-    this.productId = productId;
+  constructor(userId: number, productOptionId: number, quantity: number) {
+    this.userId = userId;
+    this.productOptionId = productOptionId;
     this.quantity = quantity;
   }
 }

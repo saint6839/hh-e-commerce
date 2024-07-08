@@ -1,16 +1,30 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import {
+  IAddCartUseCase,
+  IAddCartUseCaseToken,
+} from 'src/cart/domain/interface/usecase/add-cart.usecase.interface';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
-import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
-import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
-import { AddCartProductDto } from '../dto/request/add-cart-product.dto';
-import { CartItemDto } from '../dto/response/cart-item.dto';
+import { AddCartProductDetailDto } from '../dto/request/add-cart-product-detail.dto';
 import { CartDto } from '../dto/response/cart.dto';
 
 @ApiTags('장바구니 관련 API')
 @Controller('/api/v1/carts')
 export class CartController {
+  constructor(
+    @Inject(IAddCartUseCaseToken)
+    private readonly addCartUseCase: IAddCartUseCase,
+  ) {}
+
   @Post()
   @ApiSwaggerResponse(
     201,
@@ -18,24 +32,12 @@ export class CartController {
     CartDto,
   )
   async addProduct(
-    @Body() dto: AddCartProductDto,
+    @Body() dto: AddCartProductDetailDto,
   ): Promise<ApiResponseDto<CartDto>> {
-    const mockCart = new CartDto(dto.userId, [
-      new CartItemDto(
-        new ProductDto(
-          dto.product.productId,
-          '상품 1',
-          10000,
-          100,
-          ProductStatus.ACTIVATE,
-        ),
-        1,
-      ),
-    ]);
     return new ApiResponseDto<CartDto>(
       true,
       '상품이 장바구니에 성공적으로 추가되었습니다.',
-      mockCart,
+      await this.addCartUseCase.execute(dto),
     );
   }
 
@@ -55,17 +57,7 @@ export class CartController {
   @ApiSwaggerResponse(200, '장바구니 조회 성공', CartDto)
   async browse(
     @Param('userId') userId: number,
-  ): Promise<ApiResponseDto<CartDto>> {
-    const mockCart = new CartDto(userId, [
-      new CartItemDto(
-        new ProductDto(1, '상품 1', 10000, 100, ProductStatus.ACTIVATE),
-        1,
-      ),
-      new CartItemDto(
-        new ProductDto(2, '상품 2', 20000, 200, ProductStatus.ACTIVATE),
-        2,
-      ),
-    ]);
-    return new ApiResponseDto<CartDto>(true, '장바구니 조회 성공', mockCart);
+  ): Promise<ApiResponseDto<CartDto | null>> {
+    return new ApiResponseDto<CartDto | null>(true, '장바구니 조회 성공', null);
   }
 }

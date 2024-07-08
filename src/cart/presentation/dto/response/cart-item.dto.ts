@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
+import { ProductOptionDto } from 'src/product/presentation/dto/response/product-option.dto';
 
 export class CartItemDto {
-  @ApiProperty({ type: ProductDto })
-  readonly product: ProductDto;
+  @ApiProperty({ type: ProductOptionDto })
+  readonly productOption: ProductOptionDto;
   @ApiProperty({ example: 1 })
   readonly quantity: number;
 
-  constructor(product: ProductDto, quantity: number) {
-    this.product = product;
+  constructor(productOption: ProductOptionDto, quantity: number) {
+    this.productOption = productOption;
     this.quantity = quantity;
   }
 }
