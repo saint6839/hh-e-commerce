@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   IDecreaseProductStockUsecase,
   IDecreaseProductStockUsecaseToken,
 } from 'src/product/domain/interface/usecase/decrease-product-stock.usecase.interface';
 import { DecreaseProductStockDto } from 'src/product/presentation/dto/request/decrease-product-stock.dto';
+import { DataSource } from 'typeorm';
 import { ICreateOrderFacadeUseCase } from '../domain/interface/usecase/create-order-facade.usecase.interface';
 import { ICreateOrderUseCaseToken } from '../domain/interface/usecase/create-order.uscase.interface';
 import { CreateOrderFacadeDto } from '../presentation/dto/request/create-order-facade.dto';
@@ -16,20 +18,30 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
     private readonly decreaseProductStockUseCase: IDecreaseProductStockUsecase,
     @Inject(ICreateOrderUseCaseToken)
     private readonly createOrderUseCase: ICreateOrderFacadeUseCase,
+    private eventEmitter: EventEmitter2,
+    private dataSource: DataSource,
   ) {}
 
   async execute(dto: CreateOrderFacadeDto): Promise<OrderDto> {
-    await Promise.all(
-      dto.productOptions.map(async (product) => {
-        return await this.decreaseProductStockUseCase.execute(
-          new DecreaseProductStockDto(
-            product.productOptionId,
-            product.quantity,
-          ),
-        );
-      }),
-    );
+    return this.dataSource.transaction(async (entityManager) => {
+      await Promise.all(
+        dto.productOptions.map(async (product) => {
+          return await this.decreaseProductStockUseCase.execute(
+            new DecreaseProductStockDto(
+              product.productOptionId,
+              product.quantity,
+            ),
+            entityManager,
+          );
+        }),
+      );
 
-    return await this.createOrderUseCase.execute(dto);
+      const orderDto = await this.createOrderUseCase.execute(
+        dto,
+        entityManager,
+      );
+      this.eventEmitter.emit('order.created', { orderId: orderDto.id });
+      return orderDto;
+    });
   }
 }

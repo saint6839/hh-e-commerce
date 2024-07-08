@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Product } from 'src/product/domain/entity/product';
+import { ProductOption } from 'src/product/domain/entity/product-option';
 import {
-  IProductRepository,
-  IProductRepositoryToken,
-} from 'src/product/domain/interface/repository/product.repository.interface';
+  IProductOptionRepository,
+  IProductOptionRepositoryToken,
+} from 'src/product/domain/interface/repository/product-option.repository.interface';
 import { DataSource } from 'typeorm';
 import { Order } from '../domain/entity/order';
 import { OrderItem } from '../domain/entity/order-item';
+import { OrderStatus } from '../domain/enum/order-status.enum';
 import {
   IOrderItemRepository,
   IOrderItemRepositoryToken,
@@ -25,8 +26,8 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
     private readonly orderRepository: IOrderRepository,
     @Inject(IOrderItemRepositoryToken)
     private readonly orderItemRepository: IOrderItemRepository,
-    @Inject(IProductRepositoryToken)
-    private readonly productRepository: IProductRepository,
+    @Inject(IProductOptionRepositoryToken)
+    private readonly productOptionRepository: IProductOptionRepository,
     private dataSource: DataSource,
   ) {}
 
@@ -36,17 +37,19 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
         orderId,
         transactionalEntityManager,
       );
-      if (!order) return;
+      if (order.status !== OrderStatus.PENDING_PAYMENT) {
+        return;
+      }
 
       await this.cancelOrder(order, transactionalEntityManager);
-      await this.restoreProductStock(order, transactionalEntityManager);
+      await this.restoreProductOptionStock(order, transactionalEntityManager);
     });
   }
 
   private async findAndValidateOrder(
     orderId: number,
     entityManager,
-  ): Promise<Order | null> {
+  ): Promise<Order> {
     const orderEntity = await this.orderRepository.findById(
       orderId,
       entityManager,
@@ -56,11 +59,11 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
       throw new Error(NOT_FOUND_ORDER_ERROR);
     }
 
-    return null;
+    return Order.fromEntity(orderEntity);
   }
 
   private async cancelOrder(order: Order, entityManager): Promise<void> {
-    // order.cancel();
+    order.cancel();
     await this.orderRepository.updateStatus(
       order.id,
       order.status,
@@ -68,7 +71,7 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
     );
   }
 
-  private async restoreProductStock(
+  private async restoreProductOptionStock(
     order: Order,
     entityManager,
   ): Promise<void> {
@@ -86,26 +89,39 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
       orderId,
       entityManager,
     );
-    return [];
+    return orderItemEntities.map((entity) => OrderItem.fromEntity(entity));
   }
 
   private async restoreStockForOrderItem(
     orderItem: OrderItem,
     entityManager,
   ): Promise<void> {
-    const product = await this.findProductWithLock(
-      orderItem.productId,
+    const productOption = await this.findProductOptionWithLock(
+      orderItem.productOptionId,
       entityManager,
     );
-    if (product) {
-      return;
-    }
+    productOption.restoreStock(orderItem.quantity);
+    await this.productOptionRepository.updateStock(
+      productOption.id,
+      productOption.stock,
+      entityManager,
+    );
   }
 
-  private async findProductWithLock(
-    productId: number,
+  private async findProductOptionWithLock(
+    productOptionId: number,
     entityManager,
-  ): Promise<Product | null> {
-    return null;
+  ): Promise<ProductOption> {
+    const productOptionEntity =
+      await this.productOptionRepository.findByIdWithLock(
+        productOptionId,
+        entityManager,
+      );
+
+    if (!productOptionEntity) {
+      throw new Error(NOT_FOUND_ORDER_ERROR);
+    }
+
+    return ProductOption.fromEntity(productOptionEntity);
   }
 }

@@ -4,7 +4,7 @@ import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 export class OrderItem {
   private _id: number;
   private _orderId: number;
-  private _productId: number;
+  private _productOptionId: number;
   private _productName: string;
   private _quantity: number;
   private _totalPriceAtOrder: number;
@@ -12,14 +12,14 @@ export class OrderItem {
   constructor(
     id: number,
     orderId: number,
-    productId: number,
+    productOptionId: number,
     productName: string,
     quantity: number,
     totalPriceAtOrder: number,
   ) {
     this._id = id;
     this._orderId = orderId;
-    this._productId = productId;
+    this._productOptionId = productOptionId;
     this._productName = productName;
     this._quantity = quantity;
     this._totalPriceAtOrder = totalPriceAtOrder;
@@ -33,8 +33,8 @@ export class OrderItem {
     return this._orderId;
   }
 
-  get productId(): number {
-    return this._productId;
+  get productOptionId(): number {
+    return this._productOptionId;
   }
 
   get productName(): string {
@@ -68,7 +68,7 @@ export class OrderItem {
     return new OrderItemDto(
       this._id,
       this._orderId,
-      this._productId,
+      this._productOptionId,
       this._quantity,
       this._totalPriceAtOrder,
     );

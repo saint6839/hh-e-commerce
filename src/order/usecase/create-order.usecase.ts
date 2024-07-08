@@ -19,14 +19,14 @@ import {
   IOrderRepository,
   IOrderRepositoryToken,
 } from '../domain/interface/repository/order.repository.interface';
-import { ICreateOrderFacadeUseCase } from '../domain/interface/usecase/create-order-facade.usecase.interface';
+import { ICreateOrderUseCase } from '../domain/interface/usecase/create-order.uscase.interface';
 import { CreateOrderFacadeDto } from '../presentation/dto/request/create-order-facade.dto';
 import { OrderDto } from '../presentation/dto/response/order-result.dto';
 import { OrderItemEntity } from '../repository/entity/order-item.entity';
 import { OrderEntity } from '../repository/entity/order.entity';
 
 @Injectable()
-export class CreateOrderUseCase implements ICreateOrderFacadeUseCase {
+export class CreateOrderUseCase implements ICreateOrderUseCase {
   constructor(
     @Inject(IProductRepositoryToken)
     private readonly productRepository: IProductRepository,

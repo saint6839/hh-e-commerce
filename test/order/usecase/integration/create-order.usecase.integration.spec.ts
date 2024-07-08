@@ -2,8 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
-import { ICreateOrderFacadeUseCase } from 'src/order/domain/interface/usecase/create-order-facade.usecase.interface';
-import { ICreateOrderUseCaseToken } from 'src/order/domain/interface/usecase/create-order.uscase.interface';
+import {
+  ICreateOrderUseCase,
+  ICreateOrderUseCaseToken,
+} from 'src/order/domain/interface/usecase/create-order.uscase.interface';
 import { CreateOrderFacadeDto } from 'src/order/presentation/dto/request/create-order-facade.dto';
 import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 import { OrderEntity } from 'src/order/repository/entity/order.entity';
@@ -19,7 +21,7 @@ import { Repository } from 'typeorm';
 
 describe('CreateOrderUseCase Integration Test', () => {
   let app: INestApplication;
-  let createOrderUseCase: ICreateOrderFacadeUseCase;
+  let createOrderUseCase: ICreateOrderUseCase;
   let productRepository: Repository<ProductEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
   let orderRepository: Repository<OrderEntity>;

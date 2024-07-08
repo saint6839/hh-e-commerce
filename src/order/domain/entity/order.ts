@@ -1,3 +1,4 @@
+import { OrderEntity } from 'src/order/repository/entity/order.entity';
 import { OrderStatus } from '../enum/order-status.enum';
 
 export class Order {
@@ -39,5 +40,19 @@ export class Order {
 
   get orderedAt(): Date {
     return this._orderedAt;
+  }
+
+  cancel(): void {
+    this._status = OrderStatus.CANCELLED;
+  }
+
+  static fromEntity(entity: OrderEntity): Order {
+    return new Order(
+      entity.id,
+      entity.userId,
+      entity.totalPrice,
+      entity.status,
+      entity.orderedAt,
+    );
   }
 }

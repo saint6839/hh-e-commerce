@@ -50,6 +50,10 @@ export class ProductOption {
     this._stock -= quantity;
   }
 
+  restoreStock(quantity: number): void {
+    this._stock += quantity;
+  }
+
   static fromEntity(entity: ProductOptionEntity): ProductOption {
     return new ProductOption(
       entity.id,

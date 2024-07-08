@@ -14,7 +14,7 @@ import { OrderDto } from '../dto/response/order-result.dto';
 export class OrderController {
   constructor(
     @Inject(ICreateOrderFacadeUseCaseToken)
-    private readonly createOrderUseCase: ICreateOrderFacadeUseCase,
+    private readonly createOrderFacadeUseCase: ICreateOrderFacadeUseCase,
   ) {}
   @Post('/')
   @ApiSwaggerResponse(201, '주문서 생성 성공', OrderDto)
@@ -24,7 +24,7 @@ export class OrderController {
     return new ApiResponseDto<OrderDto>(
       true,
       '주문서 생성 성공',
-      await this.createOrderUseCase.execute(dto),
+      await this.createOrderFacadeUseCase.execute(dto),
     );
   }
 }

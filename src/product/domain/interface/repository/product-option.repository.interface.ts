@@ -19,4 +19,9 @@ export interface IProductOptionRepository {
     stock: number,
     entityManager?: EntityManager,
   ): Promise<void>;
+
+  findByIdWithLock(
+    id: number,
+    entityManager?: EntityManager,
+  ): Promise<ProductOptionEntity | null>;
 }

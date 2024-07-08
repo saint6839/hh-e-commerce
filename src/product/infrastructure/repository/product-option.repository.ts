@@ -16,6 +16,20 @@ export class ProductOptionRepository
   ) {
     super(productOptionRepository);
   }
+
+  async findByIdWithLock(
+    id: number,
+    entityManager?: EntityManager | undefined,
+  ): Promise<ProductOptionEntity | null> {
+    return this.executeQuery(
+      (repo) =>
+        repo.findOne({
+          where: { id },
+          lock: { mode: 'pessimistic_write' },
+        }),
+      entityManager,
+    );
+  }
   async updateStock(
     id: number,
     stock: number,

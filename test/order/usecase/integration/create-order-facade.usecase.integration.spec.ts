@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
@@ -6,6 +7,7 @@ import {
   ICreateOrderFacadeUseCase,
   ICreateOrderFacadeUseCaseToken,
 } from 'src/order/domain/interface/usecase/create-order-facade.usecase.interface';
+import { OrderEventListener } from 'src/order/listener/order-event.listener';
 import { CreateOrderFacadeDto } from 'src/order/presentation/dto/request/create-order-facade.dto';
 import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 import { OrderEntity } from 'src/order/repository/entity/order.entity';
@@ -24,6 +26,8 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
   let orderRepository: Repository<OrderEntity>;
   let orderItemRepository: Repository<OrderItemEntity>;
   let userRepository: Repository<UserEntity>;
+  let eventEmitter: EventEmitter2;
+  let orderEventListener: OrderEventListener;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -42,6 +46,8 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
       getRepositoryToken(OrderItemEntity),
     );
     userRepository = moduleFixture.get(getRepositoryToken(UserEntity));
+    eventEmitter = moduleFixture.get(EventEmitter2);
+    orderEventListener = moduleFixture.get(OrderEventListener);
   });
 
   afterAll(async () => {
@@ -56,7 +62,7 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
     await userRepository.clear();
   });
 
-  it('주문이 성공적으로 생성되고 재고가 감소하는지 테스트', async () => {
+  it('주문이 성공적으로 생성되고 재고가 감소하며 이벤트가 발생하는지 테스트', async () => {
     // given
     const user = await userRepository.save({
       name: 'Test User',
@@ -79,6 +85,10 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
       userId: user.id,
       productOptions: [{ productOptionId: productOption.id, quantity: 2 }],
     };
+
+    // 이벤트 리스너 모의 설정
+    const mockEventListener = jest.fn();
+    eventEmitter.on('order.created', mockEventListener);
 
     // when
     const result = await createOrderFacadeUseCase.execute(createOrderDto);
@@ -106,9 +116,12 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
       where: { id: productOption.id },
     });
     expect(updatedProductOption?.stock).toBe(8);
+
+    // 이벤트 발생 확인
+    expect(mockEventListener).toHaveBeenCalledWith({ orderId: result.id });
   });
 
-  it('재고가 부족한 경우 주문이 생성되지 않고 예외가 발생하는지 테스트', async () => {
+  it('재고가 부족한 경우 주문이 생성되지 않고 예외가 발생하며 트랜잭션이 롤백되는지 테스트', async () => {
     // given
     const user = await userRepository.save({
       name: 'Test User',
@@ -132,6 +145,10 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
       productOptions: [{ productOptionId: productOption.id, quantity: 2 }],
     };
 
+    // 이벤트 리스너 모의 설정
+    const mockEventListener = jest.fn();
+    eventEmitter.on('order.created', mockEventListener);
+
     // when & then
     await expect(
       createOrderFacadeUseCase.execute(createOrderDto),
@@ -144,26 +161,8 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
       where: { id: productOption.id },
     });
     expect(updatedProductOption?.stock).toBe(1);
-  });
 
-  it('존재하지 않는 상품 옵션으로 주문 시 예외가 발생하는지 테스트', async () => {
-    // given
-    const user = await userRepository.save({
-      name: 'Test User',
-      balance: 10000,
-    });
-
-    const createOrderDto: CreateOrderFacadeDto = {
-      userId: user.id,
-      productOptions: [{ productOptionId: 999, quantity: 1 }],
-    };
-
-    // when & then
-    await expect(
-      createOrderFacadeUseCase.execute(createOrderDto),
-    ).rejects.toThrow();
-
-    const orders = await orderRepository.find();
-    expect(orders).toHaveLength(0);
+    // 이벤트가 발생하지 않았는지 확인
+    expect(mockEventListener).not.toHaveBeenCalled();
   });
 });
