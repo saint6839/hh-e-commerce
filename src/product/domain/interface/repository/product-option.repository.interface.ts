@@ -24,4 +24,9 @@ export interface IProductOptionRepository {
     id: number,
     entityManager?: EntityManager,
   ): Promise<ProductOptionEntity | null>;
+
+  findByIds(
+    ids: number[],
+    entityManager?: EntityManager,
+  ): Promise<ProductOptionEntity[]>;
 }

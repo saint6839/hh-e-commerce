@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BaseRepository } from 'src/common/interface/repository/base.repository.abstract';
 import { IProductOptionRepository } from 'src/product/domain/interface/repository/product-option.repository.interface';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { ProductOptionEntity } from '../entity/product-option.entity';
 
 @Injectable()
@@ -15,6 +15,18 @@ export class ProductOptionRepository
     private readonly productOptionRepository: Repository<ProductOptionEntity>,
   ) {
     super(productOptionRepository);
+  }
+  async findByIds(
+    ids: number[],
+    entityManager?: EntityManager,
+  ): Promise<ProductOptionEntity[]> {
+    return this.executeQuery(
+      (repo) =>
+        repo.find({
+          where: { id: In(ids) },
+        }),
+      entityManager,
+    );
   }
 
   async findByIdWithLock(
