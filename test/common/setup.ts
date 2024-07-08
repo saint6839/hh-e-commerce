@@ -24,6 +24,11 @@ export async function setupTestingModule(): Promise<TestingModule> {
           __dirname + '/../../dist/**/*.entity{.ts,.js}',
         ],
         synchronize: true,
+        extra: {
+          connectionLimit: 50,
+          queueLimit: 0,
+        },
+        poolSize: 50,
       }),
       UserModule,
       ProductModule,

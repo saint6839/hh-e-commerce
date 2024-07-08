@@ -2,6 +2,7 @@ import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
+import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import {
   IBrowseProductsUseCase,
   IBrowseProductsUseCaseToken,
@@ -36,6 +37,7 @@ export class ProductController {
       '상품 ' + productId,
       10000,
       100,
+      ProductStatus.ACTIVATE,
     );
     return new ApiResponseDto(true, '특정 상품 조회 성공', mockProduct);
   }
@@ -44,9 +46,9 @@ export class ProductController {
   @ApiSwaggerResponse(200, '인기 상품 목록 조회 성공', [ProductDto])
   async getPopularProducts(): Promise<ApiResponseDto<ProductDto[]>> {
     const mockPopularProducts = [
-      new ProductDto(1, '인기 상품 1', 15000, 40),
-      new ProductDto(2, '인기 상품 2', 25000, 30),
-      new ProductDto(3, '인기 상품 3', 35000, 20),
+      new ProductDto(1, '인기 상품 1', 15000, 40, ProductStatus.ACTIVATE),
+      new ProductDto(2, '인기 상품 2', 25000, 30, ProductStatus.ACTIVATE),
+      new ProductDto(3, '인기 상품 3', 35000, 20, ProductStatus.ACTIVATE),
     ];
     return new ApiResponseDto(
       true,

@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
+import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 import { AddCartProductDto } from '../dto/request/add-cart-product.dto';
 import { CartItemDto } from '../dto/response/cart-item.dto';
@@ -21,7 +22,13 @@ export class CartController {
   ): Promise<ApiResponseDto<CartDto>> {
     const mockCart = new CartDto(dto.userId, [
       new CartItemDto(
-        new ProductDto(dto.product.productId, '상품 1', 10000, 100),
+        new ProductDto(
+          dto.product.productId,
+          '상품 1',
+          10000,
+          100,
+          ProductStatus.ACTIVATE,
+        ),
         1,
       ),
     ]);
@@ -50,8 +57,14 @@ export class CartController {
     @Param('userId') userId: number,
   ): Promise<ApiResponseDto<CartDto>> {
     const mockCart = new CartDto(userId, [
-      new CartItemDto(new ProductDto(1, '상품 1', 10000, 100), 1),
-      new CartItemDto(new ProductDto(2, '상품 2', 20000, 200), 2),
+      new CartItemDto(
+        new ProductDto(1, '상품 1', 10000, 100, ProductStatus.ACTIVATE),
+        1,
+      ),
+      new CartItemDto(
+        new ProductDto(2, '상품 2', 20000, 200, ProductStatus.ACTIVATE),
+        2,
+      ),
     ]);
     return new ApiResponseDto<CartDto>(true, '장바구니 조회 성공', mockCart);
   }

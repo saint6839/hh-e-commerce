@@ -12,6 +12,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
 @Module({
   imports: [TypeOrmModule.forFeature([ProductEntity])],
   controllers: [ProductController],
+  exports: [IProductRepositoryToken, TypeOrmModule],
   providers: [
     {
       provide: IProductRepositoryToken,

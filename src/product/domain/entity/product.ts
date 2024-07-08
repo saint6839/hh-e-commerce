@@ -1,17 +1,28 @@
 import { ProductEntity } from 'src/product/infrastructure/entity/product.entity';
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
+import { ProductStatus } from '../enum/product-status.enum';
+
+export const NOT_ENOUGH_STOCK_ERROR = '재고가 부족합니다.';
 
 export class Product {
   private _id: number;
   private _name: string;
   private _price: number;
   private _stock: number;
+  private _status: ProductStatus;
 
-  constructor(id: number, name: string, price: number, stock: number) {
+  constructor(
+    id: number,
+    name: string,
+    price: number,
+    stock: number,
+    status: ProductStatus,
+  ) {
     this._id = id;
     this._name = name;
     this._price = price;
     this._stock = stock;
+    this._status = status;
   }
 
   get id(): number {
@@ -31,7 +42,13 @@ export class Product {
   }
 
   static fromEntity(entity: ProductEntity): Product {
-    return new Product(entity.id, entity.name, entity.price, entity.stock);
+    return new Product(
+      entity.id,
+      entity.name,
+      entity.price,
+      entity.stock,
+      entity.status,
+    );
   }
 
   toEntity(): ProductEntity {
@@ -44,10 +61,27 @@ export class Product {
   }
 
   toDto(): ProductDto {
-    return new ProductDto(this._id, this._name, this._price, this._stock);
+    return new ProductDto(
+      this._id,
+      this._name,
+      this._price,
+      this._stock,
+      this._status,
+    );
   }
 
   static fromDto(dto: ProductDto): Product {
-    return new Product(dto.id, dto.name, dto.price, dto.stock);
+    return new Product(dto.id, dto.name, dto.price, dto.stock, dto.status);
+  }
+
+  decreaseStock(quantity: number): void {
+    if (this._stock < quantity) {
+      throw new Error(NOT_ENOUGH_STOCK_ERROR);
+    }
+    this._stock -= quantity;
+  }
+
+  increaseStock(quantity: number): void {
+    this._stock += quantity;
   }
 }

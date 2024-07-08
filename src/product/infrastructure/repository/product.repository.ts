@@ -40,4 +40,30 @@ export class ProductRepository
       entityManager,
     );
   }
+
+  async updateStock(
+    id: number,
+    quantity: number,
+    entityManager?: EntityManager | undefined,
+  ): Promise<ProductEntity> {
+    return this.executeQuery(async (repo) => {
+      await repo.update({ id, deletedAt: IsNull() }, { stock: quantity });
+      return repo.findOneOrFail({ where: { id } });
+    }, entityManager);
+  }
+
+  async findByIdWithLock(
+    id: number,
+    entityManager?: EntityManager,
+  ): Promise<ProductEntity | null> {
+    return this.executeQuery(
+      async (repo) =>
+        await repo
+          .createQueryBuilder('product')
+          .setLock('pessimistic_write')
+          .where('product.id = :id', { id })
+          .getOne(),
+      entityManager,
+    );
+  }
 }

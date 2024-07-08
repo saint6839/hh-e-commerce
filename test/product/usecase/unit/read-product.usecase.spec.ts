@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import {
   IProductRepository,
   IProductRepositoryToken,
@@ -39,6 +40,7 @@ describe('ReadProductUseCase', () => {
       name: '테스트 상품',
       price: 1000,
       stock: 10,
+      status: ProductStatus.ACTIVATE,
       deletedAt: null,
     };
     mockProductRepository.findById.mockResolvedValue(mockProductEntity);

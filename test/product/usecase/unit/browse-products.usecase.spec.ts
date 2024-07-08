@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import {
   IProductRepository,
   IProductRepositoryToken,
@@ -31,8 +32,22 @@ describe('BrowseProductsUseCase', () => {
 
   it('등록된 상품이 모두 잘 조회되어야 한다.', async () => {
     const mockProductEntities: ProductEntity[] = [
-      { id: 1, name: '상품1', price: 1000, stock: 10, deletedAt: null },
-      { id: 2, name: '상품2', price: 2000, stock: 20, deletedAt: null },
+      {
+        id: 1,
+        name: '상품1',
+        price: 1000,
+        stock: 10,
+        status: ProductStatus.ACTIVATE,
+        deletedAt: null,
+      },
+      {
+        id: 2,
+        name: '상품2',
+        price: 2000,
+        stock: 20,
+        status: ProductStatus.ACTIVATE,
+        deletedAt: null,
+      },
     ];
 
     mockProductRepository.findAll.mockResolvedValue(mockProductEntities);

@@ -1,5 +1,4 @@
 export enum OrderStatus {
-  CREATED = '생성됨',
   PENDING_PAYMENT = '결제 대기중',
   PAID = '결제 완료',
   PREPARING = '상품 준비중',

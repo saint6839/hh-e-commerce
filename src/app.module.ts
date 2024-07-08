@@ -1,5 +1,6 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
@@ -24,6 +25,7 @@ import { UserModule } from './user/user.module';
     OrderModule,
     CartModule,
     PaymentModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [],
   providers: [

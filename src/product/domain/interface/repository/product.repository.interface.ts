@@ -10,4 +10,15 @@ export interface IProductRepository {
   ): Promise<ProductEntity | null>;
 
   findAll(entityManager?: EntityManager): Promise<ProductEntity[]>;
+
+  updateStock(
+    id: number,
+    quantity: number,
+    entityManager?: EntityManager,
+  ): Promise<ProductEntity>;
+
+  findByIdWithLock(
+    id: number,
+    entityManager?: EntityManager,
+  ): Promise<ProductEntity | null>;
 }
