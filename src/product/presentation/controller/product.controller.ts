@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
 import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
@@ -25,6 +25,10 @@ export class ProductController {
   ) {}
 
   @Get('/all')
+  @ApiOperation({
+    summary: '전체 상품 목록 조회',
+    description: '전체 상품 목록을 조회합니다.',
+  })
   @ApiSwaggerResponse(200, '전체 상품 목록 조회 성공', [ProductDto])
   async getAllProducts(): Promise<ApiResponseDto<ProductDto[]>> {
     return new ApiResponseDto(
@@ -35,6 +39,10 @@ export class ProductController {
   }
 
   @Get('/:productId')
+  @ApiOperation({
+    summary: '특정 상품 조회',
+    description: '특정 상품을 조회합니다.',
+  })
   @ApiSwaggerResponse(200, '특정 상품 조회 성공', ProductDto)
   async getProduct(
     @Param('productId') productId: number,
@@ -47,6 +55,10 @@ export class ProductController {
   }
 
   @Get('/popular')
+  @ApiOperation({
+    summary: '인기 상품 목록 조회',
+    description: '인기 상품 목록을 조회합니다.',
+  })
   @ApiSwaggerResponse(200, '인기 상품 목록 조회 성공', [ProductDto])
   async getPopularProducts(): Promise<ApiResponseDto<ProductDto[]>> {
     const mockPopularProducts = [

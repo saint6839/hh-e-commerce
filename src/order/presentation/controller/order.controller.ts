@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
 import {
@@ -17,6 +17,10 @@ export class OrderController {
     private readonly createOrderFacadeUseCase: ICreateOrderFacadeUseCase,
   ) {}
   @Post('/')
+  @ApiOperation({
+    summary: '주문서 생성',
+    description: '사용자가 주문할 상품들에 대한 주문서를 생성합니다.',
+  })
   @ApiSwaggerResponse(201, '주문서 생성 성공', OrderDto)
   async createOrder(
     @Body() dto: CreateOrderFacadeDto,

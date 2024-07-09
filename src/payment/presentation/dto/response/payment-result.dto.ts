@@ -6,6 +6,9 @@ export class PaymentResultDto {
   readonly paymentId: number;
 
   @ApiProperty({ example: 1 })
+  readonly userId: number;
+
+  @ApiProperty({ example: 1 })
   readonly orderId: number;
 
   @ApiProperty({ example: 1000 })
@@ -19,12 +22,14 @@ export class PaymentResultDto {
 
   constructor(
     paymentId: number,
+    userId: number,
     orderId: number,
     amount: number,
     status: PaymentStatus,
     paidAt: Date,
   ) {
     this.paymentId = paymentId;
+    this.userId = userId;
     this.orderId = orderId;
     this.amount = amount;
     this.status = status;

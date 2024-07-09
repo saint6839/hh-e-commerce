@@ -7,7 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   IAddCartUseCase,
   IAddCartUseCaseToken,
@@ -32,6 +32,10 @@ export class CartController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: '장바구니에 상품 추가',
+    description: '사용자가 선택한 상품을 장바구니에 추가합니다.',
+  })
   @ApiSwaggerResponse(
     201,
     '상품이 장바구니에 성공적으로 추가되었습니다.',
@@ -48,6 +52,10 @@ export class CartController {
   }
 
   @Delete('/:cartId')
+  @ApiOperation({
+    summary: '장바구니에서 상품 삭제',
+    description: '장바구니에서 특정 상품을 삭제합니다.',
+  })
   @ApiSwaggerResponse(204, '상품이 장바구니에서 성공적으로 삭제되었습니다.')
   async deleteProduct(
     @Param('cartId') cartId: number,
@@ -60,6 +68,10 @@ export class CartController {
   }
 
   @Get('/:userId')
+  @ApiOperation({
+    summary: '사용자의 장바구니 조회',
+    description: '특정 사용자의 장바구니 내용을 조회합니다.',
+  })
   @ApiSwaggerResponse(200, '장바구니 조회 성공', [CartDto])
   async browse(
     @Param('userId') userId: number,
