@@ -212,14 +212,15 @@ erDiagram
   order_items {
     long id
     long orderId
-    long productId
+    long productOptionId
     int quantity
-    long price
+    long totalPriceAtOrder
     datetime deletedAt
   }
 
   payments {
     long id
+    long userId
     long orderId
     long amount
     enum paymentMethod
@@ -238,6 +239,7 @@ erDiagram
 
   popular_products {
     long id
+    long productId
     long productOptionId
     int totalSold
     date soldDate
