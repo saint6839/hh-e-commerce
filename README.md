@@ -250,8 +250,7 @@ erDiagram
   users ||--o{ orders : "has"
   orders ||--o{ order_items : "contains"
   products ||--o{ order_items : "is in"
-  carts ||--o{ cart_items : "contains"
-  products ||--o{ cart_items : "is in"
+
   products ||--o{ popular_products : "is"
   orders ||--|| payments : "has"
 ```
