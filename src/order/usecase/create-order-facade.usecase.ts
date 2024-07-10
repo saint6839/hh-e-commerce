@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  ICreatePaymentUseCase,
+  ICreatePaymentUseCaseToken,
+} from 'src/payment/domain/interface/usecase/create-payment.usecase.interface';
+import { PaymentDto } from 'src/payment/presentation/dto/request/payment.dto';
+import {
   IDecreaseProductStockUsecase,
   IDecreaseProductStockUsecaseToken,
 } from 'src/product/domain/interface/usecase/decrease-product-stock.usecase.interface';
@@ -18,6 +23,8 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
     private readonly decreaseProductStockUseCase: IDecreaseProductStockUsecase,
     @Inject(ICreateOrderUseCaseToken)
     private readonly createOrderUseCase: ICreateOrderFacadeUseCase,
+    @Inject(ICreatePaymentUseCaseToken)
+    private readonly createPaymentUseCase: ICreatePaymentUseCase,
     private eventEmitter: EventEmitter2,
     private dataSource: DataSource,
   ) {}
@@ -39,6 +46,10 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
       const orderDto = await this.createOrderUseCase.execute(
         dto,
         entityManager,
+      );
+
+      await this.createPaymentUseCase.execute(
+        new PaymentDto(dto.userId, orderDto.id, orderDto.totalPrice),
       );
       this.eventEmitter.emit('order.created', { orderId: orderDto.id });
       return orderDto;

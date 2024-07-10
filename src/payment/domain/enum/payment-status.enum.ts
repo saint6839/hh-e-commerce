@@ -5,5 +5,4 @@ export enum PaymentStatus {
   FAILED = '실패',
   CANCELLED = '취소됨',
   REFUNDED = '환불됨',
-  PARTIALLY_REFUNDED = '부분 환불',
 }

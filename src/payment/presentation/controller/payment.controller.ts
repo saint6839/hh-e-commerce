@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
+import { PaymentMethod } from 'src/payment/domain/enum/payment-method.enum';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 import { PaymentDto } from '../dto/request/payment.dto';
 import { PaymentResultDto } from '../dto/response/payment-result.dto';
@@ -23,6 +24,7 @@ export class PaymentController {
       dto.orderId,
       dto.amount,
       PaymentStatus.COMPLETED,
+      PaymentMethod.CARD,
       new Date(),
     );
     return new ApiResponseDto<PaymentResultDto>(true, '결제 성공', mockPayment);

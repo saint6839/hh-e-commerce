@@ -46,57 +46,24 @@ export class CreateOrderUseCase implements ICreateOrderUseCase {
     const transactionCallback = async (
       transactionEntityManager: EntityManager,
     ) => {
-      let totalPrice = 0;
-      const orderItems: OrderItemEntity[] = [];
-
-      for (const productOption of dto.productOptions) {
-        const productOptionEntity = await this.findProductOption(
-          productOption.productOptionId,
-          transactionEntityManager,
-        );
-        const productEntity = await this.findProduct(
-          productOptionEntity.productId,
-          transactionEntityManager,
-        );
-
-        const itemTotalPrice =
-          productOptionEntity.price * productOption.quantity;
-        totalPrice += itemTotalPrice;
-
-        orderItems.push(
-          OrderItemEntity.of(
-            0, // 임시 orderId, 실제 orderId는 나중에 설정됩니다.
-            productOptionEntity.id,
-            productEntity.name,
-            productOption.quantity,
-            itemTotalPrice,
-          ),
-        );
-      }
-
-      const orderEntity = await this.orderRepository.create(
-        OrderEntity.of(dto.userId, totalPrice),
+      const { totalPrice, orderItems } = await this.prepareOrderItems(
+        dto,
         transactionEntityManager,
       );
 
-      const createdOrderItems = await Promise.all(
-        orderItems.map((item) => {
-          item.orderId = orderEntity.id;
-          return this.orderItemRepository.create(
-            item,
-            transactionEntityManager,
-          );
-        }),
+      const orderEntity = await this.createOrder(
+        dto.userId,
+        totalPrice,
+        transactionEntityManager,
       );
 
-      return new OrderDto(
+      const createdOrderItems = await this.createOrderItems(
+        orderItems,
         orderEntity.id,
-        orderEntity.userId,
-        orderEntity.totalPrice,
-        orderEntity.status,
-        orderEntity.orderedAt,
-        createdOrderItems.map((item) => OrderItem.fromEntity(item).toDto()),
+        transactionEntityManager,
       );
+
+      return this.createOrderDto(orderEntity, createdOrderItems);
     };
 
     if (entityManager) {
@@ -104,6 +71,91 @@ export class CreateOrderUseCase implements ICreateOrderUseCase {
     } else {
       return await this.dataSource.transaction(transactionCallback);
     }
+  }
+
+  private async prepareOrderItems(
+    dto: CreateOrderFacadeDto,
+    entityManager: EntityManager,
+  ) {
+    let totalPrice = 0;
+    const orderItems: OrderItemEntity[] = [];
+
+    for (const productOption of dto.productOptions) {
+      const { productOptionEntity, productEntity } =
+        await this.findProductAndOption(
+          productOption.productOptionId,
+          entityManager,
+        );
+
+      const itemTotalPrice = productOptionEntity.price * productOption.quantity;
+      totalPrice += itemTotalPrice;
+
+      orderItems.push(
+        OrderItemEntity.of(
+          0,
+          productOptionEntity.id,
+          productEntity.name,
+          productOption.quantity,
+          itemTotalPrice,
+        ),
+      );
+    }
+
+    return { totalPrice, orderItems };
+  }
+
+  private async findProductAndOption(
+    productOptionId: number,
+    entityManager: EntityManager,
+  ) {
+    const productOptionEntity = await this.findProductOption(
+      productOptionId,
+      entityManager,
+    );
+    const productEntity = await this.findProduct(
+      productOptionEntity.productId,
+      entityManager,
+    );
+
+    return { productOptionEntity, productEntity };
+  }
+
+  private async createOrder(
+    userId: number,
+    totalPrice: number,
+    entityManager: EntityManager,
+  ) {
+    return await this.orderRepository.create(
+      OrderEntity.of(userId, totalPrice),
+      entityManager,
+    );
+  }
+
+  private async createOrderItems(
+    orderItems: OrderItemEntity[],
+    orderId: number,
+    entityManager: EntityManager,
+  ) {
+    return await Promise.all(
+      orderItems.map((item) => {
+        item.orderId = orderId;
+        return this.orderItemRepository.create(item, entityManager);
+      }),
+    );
+  }
+
+  private createOrderDto(
+    orderEntity: OrderEntity,
+    createdOrderItems: OrderItemEntity[],
+  ) {
+    return new OrderDto(
+      orderEntity.id,
+      orderEntity.userId,
+      orderEntity.totalPrice,
+      orderEntity.status,
+      orderEntity.orderedAt,
+      createdOrderItems.map((item) => OrderItem.fromEntity(item).toDto()),
+    );
   }
 
   private async findProductOption(

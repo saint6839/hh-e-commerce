@@ -39,4 +39,8 @@ export class OrderEntity {
     order.totalPrice = totalPrice;
     return order;
   }
+
+  complete(): void {
+    this.status = OrderStatus.PAID;
+  }
 }

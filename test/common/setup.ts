@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartModule } from '../../src/cart/cart.module';
 import { OrderModule } from '../../src/order/order.module';
-import { PaymentModule } from '../../src/payment/payment.moduel';
+import { PaymentModule } from '../../src/payment/payment.module';
 import { ProductModule } from '../../src/product/product.module';
 import { UserModule } from '../../src/user/user.module';
 

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PaymentMethod } from 'src/payment/domain/enum/payment-method.enum';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 
 export class PaymentResultDto {
@@ -17,8 +18,15 @@ export class PaymentResultDto {
   @ApiProperty({ enum: PaymentStatus, example: PaymentStatus.COMPLETED })
   readonly status: PaymentStatus;
 
-  @ApiProperty({ example: '2021-08-01T00:00:00' })
-  readonly paidAt: Date;
+  @ApiProperty({
+    enum: PaymentMethod,
+    example: PaymentMethod.CARD,
+    nullable: true,
+  })
+  readonly paymentMethod?: PaymentMethod | null;
+
+  @ApiProperty({ example: '2021-08-01T00:00:00', nullable: true })
+  readonly paidAt?: Date | null;
 
   constructor(
     paymentId: number,
@@ -26,13 +34,15 @@ export class PaymentResultDto {
     orderId: number,
     amount: number,
     status: PaymentStatus,
-    paidAt: Date,
+    paymentMethod?: PaymentMethod | null,
+    paidAt?: Date | null,
   ) {
     this.paymentId = paymentId;
     this.userId = userId;
     this.orderId = orderId;
     this.amount = amount;
     this.status = status;
+    this.paymentMethod = paymentMethod;
     this.paidAt = paidAt;
   }
 }

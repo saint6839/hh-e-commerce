@@ -4,7 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
-import { PaymentModule } from './payment/payment.moduel';
+import { PaymentModule } from './payment/payment.module';
 import { ProductModule } from './product/product.module';
 import { UserModule } from './user/user.module';
 

@@ -11,6 +11,7 @@ import { OrderEventListener } from 'src/order/listener/order-event.listener';
 import { CreateOrderFacadeDto } from 'src/order/presentation/dto/request/create-order-facade.dto';
 import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 import { OrderEntity } from 'src/order/repository/entity/order.entity';
+import { PaymentEntity } from 'src/payment/infrastructure/entity/payment.entity';
 import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-option.entity';
 import { ProductEntity } from 'src/product/infrastructure/entity/product.entity';
@@ -26,6 +27,7 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
   let orderRepository: Repository<OrderEntity>;
   let orderItemRepository: Repository<OrderItemEntity>;
   let userRepository: Repository<UserEntity>;
+  let paymentRepository: Repository<PaymentEntity>;
   let eventEmitter: EventEmitter2;
   let orderEventListener: OrderEventListener;
 
@@ -46,6 +48,7 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
       getRepositoryToken(OrderItemEntity),
     );
     userRepository = moduleFixture.get(getRepositoryToken(UserEntity));
+    paymentRepository = moduleFixture.get(getRepositoryToken(PaymentEntity));
     eventEmitter = moduleFixture.get(EventEmitter2);
     orderEventListener = moduleFixture.get(OrderEventListener);
   });
@@ -119,6 +122,13 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
 
     // 이벤트 발생 확인
     expect(mockEventListener).toHaveBeenCalledWith({ orderId: result.id });
+
+    // 결제 생성 확인
+    const payment = await paymentRepository.findOne({
+      where: { orderId: result.id },
+    });
+    expect(payment).toBeDefined();
+    expect(payment?.amount).toBe(result.totalPrice);
   });
 
   it('재고가 부족한 경우 주문이 생성되지 않고 예외가 발생하며 트랜잭션이 롤백되는지 테스트', async () => {
