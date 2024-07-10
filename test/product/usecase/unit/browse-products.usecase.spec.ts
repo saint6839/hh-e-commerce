@@ -12,11 +12,13 @@ import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-o
 import { ProductEntity } from 'src/product/infrastructure/entity/product.entity';
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 import { BrowseProductsUseCase } from 'src/product/usecase/browse-products.usecase';
+import { DataSource } from 'typeorm';
 
 describe('BrowseProductsUseCase', () => {
   let useCase: BrowseProductsUseCase;
   let mockProductRepository: jest.Mocked<IProductRepository>;
   let mockProductOptionRepository: jest.Mocked<IProductOptionRepository>;
+  let mockDataSource: any;
 
   beforeEach(async () => {
     mockProductRepository = {
@@ -26,6 +28,10 @@ describe('BrowseProductsUseCase', () => {
     mockProductOptionRepository = {
       findByProductId: jest.fn(),
     } as any;
+
+    mockDataSource = {
+      transaction: jest.fn((callback) => callback()),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -37,6 +43,10 @@ describe('BrowseProductsUseCase', () => {
         {
           provide: IProductOptionRepositoryToken,
           useValue: mockProductOptionRepository,
+        },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
         },
       ],
     }).compile();
@@ -127,10 +137,17 @@ describe('BrowseProductsUseCase', () => {
     mockProductRepository.findAll.mockResolvedValue(mockProductEntities);
     mockProductOptionRepository.findByProductId.mockResolvedValue([]);
 
+    mockDataSource.transaction.mockImplementation(async (callback) => {
+      return callback(mockDataSource);
+    });
+
     const result = await useCase.execute();
 
-    expect(mockProductRepository.findAll).toHaveBeenCalled();
-    expect(mockProductOptionRepository.findByProductId).toHaveBeenCalledWith(1);
+    expect(mockProductRepository.findAll).toHaveBeenCalledWith(mockDataSource);
+    expect(mockProductOptionRepository.findByProductId).toHaveBeenCalledWith(
+      1,
+      mockDataSource,
+    );
     expect(result).toHaveLength(1);
     expect(result[0].productOptions).toHaveLength(0);
   });

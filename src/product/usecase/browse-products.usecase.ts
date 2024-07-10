@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DataSource, EntityManager } from 'typeorm';
 import {
   IProductOptionRepository,
   IProductOptionRepositoryToken,
@@ -18,36 +19,55 @@ export class BrowseProductsUseCase implements IBrowseProductsUseCase {
     private readonly productRepository: IProductRepository,
     @Inject(IProductOptionRepositoryToken)
     private readonly productOptionRepository: IProductOptionRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
    * 전체 상품 목록을 조회하는 usecase
    * @returns
    */
-  async execute(): Promise<ProductDto[]> {
-    const productEntities = await this.productRepository.findAll();
-
-    const productDtosPromises = productEntities.map(async (productEntity) => {
-      const productOptionEntities =
-        await this.productOptionRepository.findByProductId(productEntity.id);
-
-      return new ProductDto(
-        productEntity.id,
-        productEntity.name,
-        productOptionEntities.map(
-          (productOptionEntity) =>
-            new ProductOptionDto(
-              productOptionEntity.id,
-              productOptionEntity.name,
-              productOptionEntity.price,
-              productOptionEntity.stock,
-              productOptionEntity.productId,
-            ),
-        ),
-        productEntity.status,
+  async execute(
+    dto: void,
+    entityManager?: EntityManager,
+  ): Promise<ProductDto[]> {
+    const transactionCallback = async (
+      transactionalEntityManager: EntityManager,
+    ) => {
+      const productEntities = await this.productRepository.findAll(
+        transactionalEntityManager,
       );
-    });
 
-    return Promise.all(productDtosPromises);
+      const productDtosPromises = productEntities.map(async (productEntity) => {
+        const productOptionEntities =
+          await this.productOptionRepository.findByProductId(
+            productEntity.id,
+            transactionalEntityManager,
+          );
+
+        return new ProductDto(
+          productEntity.id,
+          productEntity.name,
+          productOptionEntities.map(
+            (productOptionEntity) =>
+              new ProductOptionDto(
+                productOptionEntity.id,
+                productOptionEntity.name,
+                productOptionEntity.price,
+                productOptionEntity.stock,
+                productOptionEntity.productId,
+              ),
+          ),
+          productEntity.status,
+        );
+      });
+
+      return Promise.all(productDtosPromises);
+    };
+
+    if (entityManager) {
+      return transactionCallback(entityManager);
+    } else {
+      return this.dataSource.transaction(transactionCallback);
+    }
   }
 }
