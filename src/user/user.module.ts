@@ -14,6 +14,7 @@ import { SpendUserBalanceUseCase } from './usecase/spend-user-balance.usecase';
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
   controllers: [UserController],
+  exports: [ISpendUserBalanceUsecaseToken],
   providers: [
     {
       provide: IUserRepositoryToken,

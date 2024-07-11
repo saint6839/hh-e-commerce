@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import {
   IOrderItemRepository,
   IOrderItemRepositoryToken,
@@ -24,7 +25,6 @@ import {
 } from 'src/user/domain/interface/usecase/spend-user-balance.usecase.interface';
 import { SpendBalanceDto } from 'src/user/presentation/dto/request/spend-balance.dto';
 import { DataSource, EntityManager } from 'typeorm';
-import { PaymentStatus } from '../domain/enum/payment-status.enum';
 import {
   IPaymentRepository,
   IPaymentRepositoryToken,
@@ -62,59 +62,69 @@ export class CompletePaymentFacadeUseCase
     private readonly dataSource: DataSource,
   ) {}
 
-  async execute(
-    dto: CompletePaymentFacadeDto,
-    entityManager?: EntityManager,
-  ): Promise<PaymentResultDto> {
-    const transactionCallback = async (entityManager: EntityManager) => {
-      const paymentEntity = await this.getPaymentEntity(
-        dto.paymentId,
-        entityManager,
-      );
-      const orderEntity = await this.getOrderEntity(
-        paymentEntity.orderId,
-        entityManager,
-      );
+  async execute(dto: CompletePaymentFacadeDto): Promise<PaymentResultDto> {
+    let paymentEntity: PaymentEntity = new PaymentEntity();
+    let orderEntity: OrderEntity = new OrderEntity();
 
-      const orderItemEntities = await this.orderItemRepository.findByOrderId(
-        orderEntity.id,
-        entityManager,
-      );
+    try {
+      const result = await this.dataSource.transaction(
+        async (entityManager) => {
+          paymentEntity = await this.getPaymentEntity(
+            dto.paymentId,
+            entityManager,
+          );
+          orderEntity = await this.getOrderEntity(
+            paymentEntity.orderId,
+            entityManager,
+          );
 
-      await this.accumulatePopularProductsSoldUseCase.execute(
-        new AccumulatePopularProductsSoldDto(
-          orderItemEntities.map(
-            (orderItem: OrderItemEntity) =>
-              new OrderItemDto(
-                orderItem.id,
-                orderItem.orderId,
-                orderItem.productOptionId,
-                orderItem.quantity,
-                orderItem.totalPriceAtOrder,
+          const orderItemEntities =
+            await this.orderItemRepository.findByOrderId(
+              orderEntity.id,
+              entityManager,
+            );
+
+          await this.accumulatePopularProductsSoldUseCase.execute(
+            new AccumulatePopularProductsSoldDto(
+              orderItemEntities.map(
+                (orderItem: OrderItemEntity) =>
+                  new OrderItemDto(
+                    orderItem.id,
+                    orderItem.orderId,
+                    orderItem.productOptionId,
+                    orderItem.quantity,
+                    orderItem.totalPriceAtOrder,
+                  ),
               ),
-          ),
-        ),
-        entityManager,
-      );
+            ),
+            entityManager,
+          );
 
-      const result = await this.completePaymentUseCase.execute(
-        new CompletePaymentDto(dto.paymentId, dto.mid, dto.tid),
-      );
+          await this.spendUserBalanceUsecase.execute(
+            new SpendBalanceDto(paymentEntity.userId, paymentEntity.amount),
+            entityManager,
+          );
 
-      if (result.status === PaymentStatus.COMPLETED) {
-        await this.spendUserBalanceUsecase.execute(
-          new SpendBalanceDto(paymentEntity.userId, paymentEntity.amount),
-          entityManager,
-        );
-      }
+          return await this.completePaymentUseCase.execute(
+            new CompletePaymentDto(dto.paymentId, dto.mid, dto.tid),
+            entityManager,
+          );
+        },
+      );
 
       return result;
-    };
+    } catch (error) {
+      // 트랜잭션 외부에서 결제 실패 처리
+      paymentEntity.fail();
+      await this.paymentRepository.update(paymentEntity);
+      orderEntity.fail();
+      await this.orderRepository.updateStatus(
+        orderEntity.id,
+        OrderStatus.CANCELLED,
+      );
 
-    if (entityManager) {
-      return transactionCallback(entityManager);
+      throw error;
     }
-    return this.dataSource.transaction(transactionCallback);
   }
 
   private async getPaymentEntity(

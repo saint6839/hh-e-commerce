@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CompletePaymentFacadeDto {
   @ApiProperty({ example: 1 })
@@ -11,11 +11,11 @@ export class CompletePaymentFacadeDto {
   readonly userId: number;
 
   @ApiProperty({ example: '130912830918' })
-  @IsNumber()
+  @IsString()
   readonly mid: string;
 
   @ApiProperty({ example: '234098120394' })
-  @IsNumber()
+  @IsString()
   readonly tid: string;
 
   constructor(paymentId: number, userId: number, mid: string, tid: string) {

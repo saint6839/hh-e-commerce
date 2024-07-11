@@ -35,6 +35,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     IProductRepositoryToken,
     IProductOptionRepositoryToken,
     IDailyPopularProductRepositoryToken,
+    IAccumulatePopularProductsSoldUseCaseToken,
     TypeOrmModule,
   ],
   providers: [

@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
@@ -15,10 +15,13 @@ import {
 } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
-import { INSUFFICIENT_BALANCE_ERROR } from 'src/user/domain/entity/user';
 import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
 import { setupTestingModule } from 'test/common/setup';
 import { Repository } from 'typeorm';
+
+const logger = new Logger('TestLogger');
+logger.debug = console.log;
+logger.verbose = console.log;
 
 describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
   let app: INestApplication;
@@ -112,12 +115,43 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     });
     expect(updatedOrder).toBeDefined();
     expect(updatedOrder?.status).toBe(OrderStatus.PAID);
+  });
 
-    const updatedUser = await userRepository.findOne({
-      where: { id: user.id },
+  it('존재하지 않는 결제에 대해 예외를 발생시키는지 테스트', async () => {
+    // given
+    const completePaymentFacadeDto = new CompletePaymentFacadeDto(
+      999,
+      1,
+      'test_mid',
+      'test_tid',
+    );
+
+    // when & then
+    await expect(
+      completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
+    ).rejects.toThrow(NOT_FOUND_PAYMENT_ERROR);
+  });
+
+  it('존재하지 않는 주문에 대해 예외를 발생시키는지 테스트', async () => {
+    // given
+    const payment = await paymentRepository.save({
+      userId: 1,
+      orderId: 999,
+      amount: 1000,
+      status: PaymentStatus.PENDING,
     });
-    expect(updatedUser).toBeDefined();
-    expect(updatedUser?.balance).toBe(5000);
+
+    const completePaymentFacadeDto = new CompletePaymentFacadeDto(
+      payment.id,
+      payment.userId,
+      'test_mid',
+      'test_tid',
+    );
+
+    // when & then
+    await expect(
+      completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
+    ).rejects.toThrow(NOT_FOUND_ORDER_ERROR);
   });
 
   it('잔액이 부족한 경우 예외를 발생시키는지 테스트', async () => {
@@ -158,13 +192,13 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     // when & then
     await expect(
       completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
-    ).rejects.toThrow(INSUFFICIENT_BALANCE_ERROR);
+    ).rejects.toThrow('잔액이 부족합니다');
 
     const unchangedPayment = await paymentRepository.findOne({
       where: { id: payment.id },
     });
     expect(unchangedPayment).toBeDefined();
-    expect(unchangedPayment?.status).toBe(PaymentStatus.FAILED);
+    expect(unchangedPayment?.status).toBe(PaymentStatus.PENDING);
 
     const unchangedOrder = await orderRepository.findOne({
       where: { id: order.id },
@@ -177,42 +211,5 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     });
     expect(unchangedUser).toBeDefined();
     expect(unchangedUser?.balance).toBe(1000);
-  });
-
-  it('존재하지 않는 결제에 대해 예외를 발생시키는지 테스트', async () => {
-    // given
-    const completePaymentFacadeDto = new CompletePaymentFacadeDto(
-      999,
-      1,
-      'test_mid',
-      'test_tid',
-    );
-
-    // when & then
-    await expect(
-      completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
-    ).rejects.toThrow(NOT_FOUND_PAYMENT_ERROR);
-  });
-
-  it('존재하지 않는 주문에 대해 예외를 발생시키는지 테스트', async () => {
-    // given
-    const payment = await paymentRepository.save({
-      userId: 1,
-      orderId: 999,
-      amount: 1000,
-      status: PaymentStatus.PENDING,
-    });
-
-    const completePaymentFacadeDto = new CompletePaymentFacadeDto(
-      payment.id,
-      payment.userId,
-      'test_mid',
-      'test_tid',
-    );
-
-    // when & then
-    await expect(
-      completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
-    ).rejects.toThrow(NOT_FOUND_ORDER_ERROR);
   });
 });

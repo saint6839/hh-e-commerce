@@ -3,17 +3,17 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
 import {
-  ICompletePaymentUseCase,
-  ICompletePaymentUseCaseToken,
-} from 'src/payment/domain/interface/usecase/complete-payment.usecase.interface';
+  ICompletePaymentFacadeUseCase,
+  ICompletePaymentFacadeUseCaseToken,
+} from 'src/payment/domain/interface/usecase/complete-payment-facade.usecase.interface';
 import { CompletePaymentFacadeDto } from '../dto/request/complete-payment-facade.dto';
 import { PaymentResultDto } from '../dto/response/payment-result.dto';
 @ApiTags('결제 관련 API')
 @Controller('/api/v1/payments')
 export class PaymentController {
   constructor(
-    @Inject(ICompletePaymentUseCaseToken)
-    private readonly completePaymentUseCase: ICompletePaymentUseCase,
+    @Inject(ICompletePaymentFacadeUseCaseToken)
+    private readonly completePaymentFacadeUseCase: ICompletePaymentFacadeUseCase,
   ) {}
 
   @Post('/')
@@ -28,7 +28,7 @@ export class PaymentController {
     return new ApiResponseDto<PaymentResultDto>(
       true,
       '결제 성공',
-      await this.completePaymentUseCase.execute(dto),
+      await this.completePaymentFacadeUseCase.execute(dto),
     );
   }
 }

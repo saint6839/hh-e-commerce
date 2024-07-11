@@ -43,4 +43,8 @@ export class OrderEntity {
   complete(): void {
     this.status = OrderStatus.PAID;
   }
+
+  fail(): void {
+    this.status = OrderStatus.CANCELLED;
+  }
 }
