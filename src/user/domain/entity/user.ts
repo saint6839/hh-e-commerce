@@ -2,6 +2,7 @@ import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
 import { UserDto } from 'src/user/presentation/dto/response/user.dto';
 
 export const INVALID_CHARGE_AMOUNT_ERROR = '충전 금액은 0보다 커야 합니다.';
+export const INSUFFICIENT_BALANCE_ERROR = '잔액이 부족합니다.';
 
 export class User {
   private _id: number;
@@ -31,6 +32,17 @@ export class User {
       throw new Error(INVALID_CHARGE_AMOUNT_ERROR);
     }
     this._balance += amount;
+    return this;
+  }
+
+  public spend(amount: number): User {
+    if (amount <= 0) {
+      throw new Error(INVALID_CHARGE_AMOUNT_ERROR);
+    }
+    if (this._balance < amount) {
+      throw new Error(INSUFFICIENT_BALANCE_ERROR);
+    }
+    this._balance -= amount;
     return this;
   }
 
