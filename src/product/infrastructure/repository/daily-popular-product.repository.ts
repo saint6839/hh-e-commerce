@@ -42,4 +42,25 @@ export class DailyPopularProductRepository
       entityManager,
     );
   }
+
+  async findTopSoldByDateRange(
+    from: Date,
+    to: Date,
+    limit: number,
+    entityManager?: EntityManager,
+  ): Promise<DailyPopularProductEntity[]> {
+    return this.executeQuery(
+      (repo) =>
+        repo
+          .createQueryBuilder('daily_popular_product')
+          .where('daily_popular_product.soldDate BETWEEN :from AND :to', {
+            from,
+            to,
+          })
+          .orderBy('daily_popular_product.totalSold', 'DESC')
+          .limit(limit)
+          .getMany(),
+      entityManager,
+    );
+  }
 }

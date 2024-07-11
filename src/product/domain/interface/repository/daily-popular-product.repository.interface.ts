@@ -16,4 +16,11 @@ export interface IDailyPopularProductRepository {
     soldDate: Date,
     entityManager?: EntityManager,
   ): Promise<DailyPopularProductEntity | null>;
+
+  findTopSoldByDateRange(
+    from: Date,
+    to: Date,
+    limit: number,
+    entityManager?: EntityManager,
+  ): Promise<DailyPopularProductEntity[]>;
 }
