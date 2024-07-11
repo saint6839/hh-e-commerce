@@ -57,7 +57,7 @@ describe('CreateOrderFacadeUseCase Integration Test', () => {
     await app.close();
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
     await orderItemRepository.clear();
     await orderRepository.clear();
     await productOptionRepository.clear();

@@ -30,7 +30,7 @@ describe('ReadUserUseCase Integration Test', () => {
     await app.close();
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
     await userRepository.clear();
   });
 

@@ -33,7 +33,7 @@ describe('CompletePaymentUseCase Integration Test', () => {
     await app.close();
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
     await paymentRepository.clear();
     await orderRepository.clear();
   });

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import {
   IDailyPopularProductRepository,
   IDailyPopularProductRepositoryToken,
@@ -21,26 +21,36 @@ export class BrowsePopularProductsFacadeUseCase
     private readonly readProductUseCase: IReadProductUseCase,
     @Inject(IDailyPopularProductRepositoryToken)
     private readonly dailyPopularProductRepository: IDailyPopularProductRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   async execute(
     dto: BrowsePopularProductsFacadeDto,
     entityManager?: EntityManager,
   ): Promise<ProductDto[]> {
-    const dailyPopularProductEntities =
-      await this.dailyPopularProductRepository.findTopSoldByDateRange(
-        dto.from,
-        dto.to,
-        5,
-        entityManager,
-      );
-
-    return await Promise.all(
-      dailyPopularProductEntities.map(async (dailyPopularProductEntity) => {
-        return await this.readProductUseCase.execute(
-          dailyPopularProductEntity.productId,
+    const transactionCallback = async (manager: EntityManager) => {
+      const dailyPopularProductEntities =
+        await this.dailyPopularProductRepository.findTopSoldByDateRange(
+          dto.from,
+          dto.to,
+          5,
+          manager,
         );
-      }),
-    );
+
+      return await Promise.all(
+        dailyPopularProductEntities.map(async (dailyPopularProductEntity) => {
+          return await this.readProductUseCase.execute(
+            dailyPopularProductEntity.productId,
+            manager,
+          );
+        }),
+      );
+    };
+
+    if (entityManager) {
+      return transactionCallback(entityManager);
+    } else {
+      return await this.dataSource.transaction(transactionCallback);
+    }
   }
 }

@@ -11,11 +11,13 @@ import {
 import { BrowsePopularProductsFacadeDto } from 'src/product/presentation/dto/request/browse-popular-products-facade.dto';
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 import { BrowsePopularProductsFacadeUseCase } from 'src/product/usecase/browse-popular-products-facade.usecase';
+import { DataSource } from 'typeorm';
 
 describe('BrowsePopularProductsFacadeUseCase', () => {
   let useCase: BrowsePopularProductsFacadeUseCase;
   let mockReadProductUseCase: jest.Mocked<IReadProductUseCase>;
   let mockDailyPopularProductRepository: jest.Mocked<IDailyPopularProductRepository>;
+  let mockDataSource: jest.Mocked<any>;
 
   beforeEach(async () => {
     mockReadProductUseCase = {
@@ -25,6 +27,10 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
     mockDailyPopularProductRepository = {
       findTopSoldByDateRange: jest.fn(),
     } as any;
+
+    mockDataSource = {
+      transaction: jest.fn((callback) => callback()),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -36,6 +42,10 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
         {
           provide: IDailyPopularProductRepositoryToken,
           useValue: mockDailyPopularProductRepository,
+        },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
         },
       ],
     }).compile();
@@ -104,6 +114,10 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
           (entity.totalSold += quantity),
       })),
     );
+    mockDataSource.transaction.mockImplementation(async (callback) => {
+      return callback(mockDataSource);
+    });
+
     mockReadProductUseCase.execute
       .mockResolvedValueOnce(mockProductDtos[0])
       .mockResolvedValueOnce(mockProductDtos[1]);

@@ -9,13 +9,14 @@ import { BrowsePopularProductsFacadeDto } from 'src/product/presentation/dto/req
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 import { BrowsePopularProductsFacadeUseCase } from 'src/product/usecase/browse-popular-products-facade.usecase';
 import { setupTestingModule } from 'test/common/setup';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 describe('BrowsePopularProductsFacadeUseCase (통합 테스트)', () => {
   let app: INestApplication;
   let browsePopularProductsFacadeUseCase: BrowsePopularProductsFacadeUseCase;
   let productRepository: Repository<ProductEntity>;
   let dailyPopularProductRepository: Repository<DailyPopularProductEntity>;
+  let dataSource: DataSource;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -30,9 +31,10 @@ describe('BrowsePopularProductsFacadeUseCase (통합 테스트)', () => {
     dailyPopularProductRepository = moduleFixture.get(
       getRepositoryToken(DailyPopularProductEntity),
     );
+    dataSource = moduleFixture.get(DataSource);
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
     await dailyPopularProductRepository.clear();
     await productRepository.clear();
   });
@@ -97,8 +99,11 @@ describe('BrowsePopularProductsFacadeUseCase (통합 테스트)', () => {
     };
 
     // when
-    const result: ProductDto[] =
-      await browsePopularProductsFacadeUseCase.execute(dto);
+    const result: ProductDto[] = await dataSource.transaction(
+      async (manager) => {
+        return await browsePopularProductsFacadeUseCase.execute(dto, manager);
+      },
+    );
 
     // then
     expect(result).toHaveLength(5);

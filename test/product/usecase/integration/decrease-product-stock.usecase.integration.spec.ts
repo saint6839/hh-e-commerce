@@ -38,7 +38,7 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
     await app.close();
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
     await productOptionRepository.clear();
     await productRepository.clear();
   });

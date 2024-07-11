@@ -32,7 +32,7 @@ describe('ReadProductUseCase (통합 테스트)', () => {
     );
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
     await productOptionRepository.clear();
     await productRepository.clear();
   });

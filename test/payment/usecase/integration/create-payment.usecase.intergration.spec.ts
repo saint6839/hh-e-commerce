@@ -27,9 +27,7 @@ describe('CreatePaymentUseCase 통합 테스트', () => {
   });
 
   afterEach(async () => {
-    if (paymentRepository) {
-      await paymentRepository.clear();
-    }
+    await paymentRepository.clear();
   });
 
   afterAll(async () => {

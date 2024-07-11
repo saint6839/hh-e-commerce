@@ -4,6 +4,8 @@ import { IOrderItemRepositoryToken } from 'src/order/domain/interface/repository
 import { IOrderRepositoryToken } from 'src/order/domain/interface/repository/order.repository.interface';
 import { CreateOrderFacadeDto } from 'src/order/presentation/dto/request/create-order-facade.dto';
 import { CreateOrderUseCase } from 'src/order/usecase/create-order.usecase';
+import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
+import { IPaymentRepositoryToken } from 'src/payment/domain/interface/repository/payment.repository.interface';
 import { IProductOptionRepositoryToken } from 'src/product/domain/interface/repository/product-option.repository.interface';
 import { IProductRepositoryToken } from 'src/product/domain/interface/repository/product.repository.interface';
 import { NOT_FOUND_PRODUCT_OPTION_ERROR } from 'src/product/infrastructure/entity/product-option.entity';
@@ -16,6 +18,7 @@ describe('CreateOrderUseCase', () => {
   let mockProductOptionRepository: any;
   let mockOrderRepository: any;
   let mockOrderItemRepository: any;
+  let mockPaymentRepository: any;
   let mockDataSource: any;
   let mockEntityManager: any;
 
@@ -30,6 +33,9 @@ describe('CreateOrderUseCase', () => {
       create: jest.fn(),
     };
     mockOrderItemRepository = {
+      create: jest.fn(),
+    };
+    mockPaymentRepository = {
       create: jest.fn(),
     };
     mockEntityManager = {
@@ -51,6 +57,10 @@ describe('CreateOrderUseCase', () => {
         {
           provide: IOrderItemRepositoryToken,
           useValue: mockOrderItemRepository,
+        },
+        {
+          provide: IPaymentRepositoryToken,
+          useValue: mockPaymentRepository,
         },
         { provide: DataSource, useValue: mockDataSource },
       ],
@@ -102,8 +112,15 @@ describe('CreateOrderUseCase', () => {
         price: 2000,
       });
 
-    const result = await useCase.execute(dto);
+    mockPaymentRepository.create.mockResolvedValue({
+      id: 1,
+      userId: 1,
+      orderId: 1,
+      amount: 4000,
+      status: PaymentStatus.PENDING,
+    });
 
+    const result = await useCase.execute(dto);
     expect(result).toBeDefined();
     expect(result.id).toBe(1);
     expect(result.userId).toBe(1);
