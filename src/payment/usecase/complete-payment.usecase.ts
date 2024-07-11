@@ -1,9 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  IOrderItemRepository,
-  IOrderItemRepositoryToken,
-} from 'src/order/domain/interface/repository/order-item.repository.interface';
-import {
   IOrderRepository,
   IOrderRepositoryToken,
 } from 'src/order/domain/interface/repository/order.repository.interface';
@@ -11,16 +7,6 @@ import {
   NOT_FOUND_ORDER_ERROR,
   OrderEntity,
 } from 'src/order/repository/entity/order.entity';
-import {
-  IDailyPopularProductRepository,
-  IDailyPopularProductRepositoryToken,
-} from 'src/product/domain/interface/repository/daily-popular-product.repository.interface';
-import {
-  IProductOptionRepository,
-  IProductOptionRepositoryToken,
-} from 'src/product/domain/interface/repository/product-option.repository.interface';
-import { DailyPopularProductEntity } from 'src/product/infrastructure/entity/daily-popular-product.entity';
-import { NOT_FOUND_PRODUCT_ERROR } from 'src/product/infrastructure/entity/product.entity';
 import { DataSource, EntityManager } from 'typeorm';
 import {
   IPaymentRepository,
@@ -45,12 +31,6 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
     private readonly paymentRepository: IPaymentRepository,
     @Inject(IOrderRepositoryToken)
     private readonly orderRepository: IOrderRepository,
-    @Inject(IOrderItemRepositoryToken)
-    private readonly orderItemRepository: IOrderItemRepository,
-    @Inject(IDailyPopularProductRepositoryToken)
-    private readonly dailyPopularProductRepository: IDailyPopularProductRepository,
-    @Inject(IProductOptionRepositoryToken)
-    private readonly productOptionRepository: IProductOptionRepository,
     @Inject(IPaymentGatewayServiceToken)
     private readonly paymentGatewayService: IPaymentGatewayService,
     private readonly dataSource: DataSource,
@@ -61,27 +41,18 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
     entityManager?: EntityManager,
   ): Promise<PaymentResultDto> {
     const transactionCallback = async (entityManager: EntityManager) => {
-      const paymentEntity = await this.getPaymentEntity(
-        dto.paymentId,
-        entityManager,
-      );
-      const orderEntity: OrderEntity = await this.getOrderEntity(
-        paymentEntity.orderId,
-        entityManager,
-      );
+      const paymentEntity = await this.getPaymentEntity(dto, entityManager);
 
-      const orderItemEntities = await this.orderItemRepository.findByOrderId(
-        orderEntity.id,
+      const orderEntity = await this.getOrderEntity(
+        paymentEntity,
         entityManager,
       );
-
-      await this.updateDailyPopularProducts(orderItemEntities, entityManager);
 
       const isValid = await this.isValidTransactionResult(dto, paymentEntity);
       const updatedPaymentEntity = await this.updatePaymentAndOrderStatus(
         paymentEntity,
         orderEntity,
-        isValid,
+        true,
         entityManager,
       );
 
@@ -102,82 +73,60 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
     return this.dataSource.transaction(transactionCallback);
   }
 
-  private async getPaymentEntity(
-    paymentId: number,
-    entityManager: EntityManager,
-  ): Promise<PaymentEntity> {
-    const paymentEntity = await this.paymentRepository.findById(
-      paymentId,
-      entityManager,
-    );
-    if (!paymentEntity) {
-      throw new Error(NOT_FOUND_PAYMENT_ERROR + ': ' + paymentId);
-    }
-    return paymentEntity;
-  }
-
   private async getOrderEntity(
-    orderId: number,
+    paymentEntity: PaymentEntity,
     entityManager: EntityManager,
-  ): Promise<OrderEntity> {
+  ) {
     const orderEntity = await this.orderRepository.findById(
-      orderId,
+      paymentEntity.orderId,
       entityManager,
     );
+
     if (!orderEntity) {
-      throw new Error(NOT_FOUND_ORDER_ERROR + ': ' + orderId);
+      throw new Error(NOT_FOUND_ORDER_ERROR);
     }
     return orderEntity;
   }
 
-  private async updateDailyPopularProducts(
-    orderItemEntities: any[],
+  private async getPaymentEntity(
+    dto: CompletePaymentDto,
     entityManager: EntityManager,
-  ): Promise<void> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  ) {
+    const paymentEntity = await this.paymentRepository.findById(
+      dto.paymentId,
+      entityManager,
+    );
 
-    for (const orderItem of orderItemEntities) {
-      const productOptionEntity = await this.productOptionRepository.findById(
-        orderItem.productOptionId,
-        entityManager,
-      );
-
-      if (!productOptionEntity) {
-        throw new Error(
-          NOT_FOUND_PRODUCT_ERROR + ': ' + orderItem.productOptionId,
-        );
-      }
-
-      const existingDailyPopularProductEntity =
-        await this.dailyPopularProductRepository.findOne(
-          productOptionEntity.productId,
-          productOptionEntity.id,
-          today,
-          entityManager,
-        );
-
-      if (existingDailyPopularProductEntity) {
-        existingDailyPopularProductEntity.accumulateTotalSold(
-          orderItem.quantity,
-        );
-        await this.dailyPopularProductRepository.save(
-          existingDailyPopularProductEntity,
-          entityManager,
-        );
-      } else {
-        const newDailyPopularProductEntity = DailyPopularProductEntity.of(
-          productOptionEntity.productId,
-          productOptionEntity.id,
-          orderItem.quantity,
-          today,
-        );
-        await this.dailyPopularProductRepository.save(
-          newDailyPopularProductEntity,
-          entityManager,
-        );
-      }
+    if (!paymentEntity) {
+      throw new Error(NOT_FOUND_PAYMENT_ERROR);
     }
+    return paymentEntity;
+  }
+
+  private async updatePaymentAndOrderStatus(
+    paymentEntity: PaymentEntity,
+    orderEntity: OrderEntity,
+    isValid: boolean,
+    entityManager: EntityManager,
+  ): Promise<PaymentEntity> {
+    if (isValid) {
+      paymentEntity.complete();
+      orderEntity.complete();
+    } else {
+      paymentEntity.fail();
+    }
+
+    const updatedPaymentEntity = await this.paymentRepository.update(
+      paymentEntity,
+      entityManager,
+    );
+    await this.orderRepository.updateStatus(
+      orderEntity.id,
+      orderEntity.status,
+      entityManager,
+    );
+
+    return updatedPaymentEntity;
   }
 
   /**
@@ -206,31 +155,5 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
       console.error('Error validating transaction result:', error);
       throw new Error('결제 검증 중 오류가 발생했습니다.');
     }
-  }
-
-  private async updatePaymentAndOrderStatus(
-    paymentEntity: PaymentEntity,
-    orderEntity: OrderEntity,
-    isValid: boolean,
-    entityManager: EntityManager,
-  ): Promise<PaymentEntity> {
-    if (isValid) {
-      paymentEntity.complete();
-      orderEntity.complete();
-    } else {
-      paymentEntity.fail();
-    }
-
-    const updatedPaymentEntity = await this.paymentRepository.update(
-      paymentEntity,
-      entityManager,
-    );
-    await this.orderRepository.updateStatus(
-      orderEntity.id,
-      orderEntity.status,
-      entityManager,
-    );
-
-    return updatedPaymentEntity;
   }
 }
