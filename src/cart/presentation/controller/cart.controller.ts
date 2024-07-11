@@ -13,6 +13,10 @@ import {
   IAddCartUseCaseToken,
 } from 'src/cart/domain/interface/usecase/add-cart.usecase.interface';
 import {
+  IBrowseCartUseCase,
+  IBrowseCartUseCaseToken,
+} from 'src/cart/domain/interface/usecase/browse-cart.usecase.interface';
+import {
   IDeleteCartUsecase,
   IDeleteCartUsecaseToken,
 } from 'src/cart/domain/interface/usecase/delete-cart.usecase.interface';
@@ -29,6 +33,8 @@ export class CartController {
     private readonly addCartUseCase: IAddCartUseCase,
     @Inject(IDeleteCartUsecaseToken)
     private readonly deleteCartUseCase: IDeleteCartUsecase,
+    @Inject(IBrowseCartUseCaseToken)
+    private readonly browseCartUseCase: IBrowseCartUseCase,
   ) {}
 
   @Post()
@@ -76,6 +82,10 @@ export class CartController {
   async browse(
     @Param('userId') userId: number,
   ): Promise<ApiResponseDto<CartDto[]>> {
-    return new ApiResponseDto<CartDto[]>(true, '장바구니 조회 성공', []);
+    return new ApiResponseDto<CartDto[]>(
+      true,
+      '장바구니 조회 성공',
+      await this.browseCartUseCase.execute(userId),
+    );
   }
 }

@@ -4,6 +4,7 @@ import { OrderModule } from 'src/order/order.module';
 import { ProductModule } from 'src/product/product.module';
 import { IPaymentRepositoryToken } from './domain/interface/repository/payment.repository.interface';
 import { IPaymentGatewayServiceToken } from './domain/interface/service/payment-gateway.service.interface';
+import { ICompletePaymentFacadeUseCaseToken } from './domain/interface/usecase/complete-payment-facade.usecase.interface';
 import { ICompletePaymentUseCaseToken } from './domain/interface/usecase/complete-payment.usecase.interface';
 import { ICreatePaymentUseCaseToken } from './domain/interface/usecase/create-payment.usecase.interface';
 import { PaymentEntity } from './infrastructure/entity/payment.entity';
@@ -36,6 +37,10 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
     },
     {
       provide: ICompletePaymentUseCaseToken,
+      useClass: CompletePaymentUseCase,
+    },
+    {
+      provide: ICompletePaymentFacadeUseCaseToken,
       useClass: CompletePaymentUseCase,
     },
   ],
