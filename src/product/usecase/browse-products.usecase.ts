@@ -23,7 +23,7 @@ export class BrowseProductsUseCase implements IBrowseProductsUseCase {
   ) {}
 
   /**
-   * 전체 상품 목록을 조회하는 usecase
+   * 전체 상품 목록과 해당 상품에 속한 옵션들을 조회하는 usecase
    * @returns
    */
   async execute(

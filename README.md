@@ -195,8 +195,7 @@ erDiagram
   products {
     long id
     varchar name
-    long price
-    int stock
+    enum status
     datetime deletedAt
   }
 
@@ -213,6 +212,7 @@ erDiagram
     long id
     long orderId
     long productOptionId
+    varchar productName
     int quantity
     long totalPriceAtOrder
     datetime deletedAt
@@ -237,7 +237,7 @@ erDiagram
     datetime deletedAt
   }
 
-  popular_products {
+  daily_popular_products {
     long id
     long productId
     long productOptionId
@@ -251,6 +251,6 @@ erDiagram
   orders ||--o{ order_items : "contains"
   products ||--o{ order_items : "is in"
 
-  products ||--o{ popular_products : "is"
+  products ||--o{ daily_popular_products : "is"
   orders ||--|| payments : "has"
 ```

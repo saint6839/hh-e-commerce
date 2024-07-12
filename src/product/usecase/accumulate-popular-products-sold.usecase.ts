@@ -25,6 +25,11 @@ export class AccumulatePopularProductsSoldUseCase
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 일자별로 특정 상품의 판매량을 누적하는 usecase
+   * 판매량 누적은 실제로 결제가 모두 완료되었을 경우에만 누적됩니다. (주문시에는 누적 X)
+   * @returns
+   */
   async execute(
     dto: AccumulatePopularProductsSoldDto,
     entityManager?: EntityManager,

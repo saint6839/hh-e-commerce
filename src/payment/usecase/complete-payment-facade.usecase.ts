@@ -62,9 +62,15 @@ export class CompletePaymentFacadeUseCase
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 주문 이후 생성된 주문서와 결제 초기데이터를 바탕으로 실제 결제를 완료하는 facade usecase
+   * 결제가 성공할 경우 주문서의 상태와 결제 상태를 결제완료로 변경하고, 주문서에 포함된 상품들의 판매량을 누적합니다.
+   * 결제가 실패할 경우 주문서의 상태를 취소로 변경하고, 결제 상태를 실패로 변경합니다.
+   * @returns
+   */
   async execute(dto: CompletePaymentFacadeDto): Promise<PaymentResultDto> {
-    let paymentEntity: PaymentEntity = new PaymentEntity();
-    let orderEntity: OrderEntity = new OrderEntity();
+    let paymentEntity: PaymentEntity | null = null;
+    let orderEntity: OrderEntity | null = null;
 
     try {
       const result = await this.dataSource.transaction(
@@ -114,14 +120,17 @@ export class CompletePaymentFacadeUseCase
 
       return result;
     } catch (error) {
-      // 트랜잭션 외부에서 결제 실패 처리
-      paymentEntity.fail();
-      await this.paymentRepository.update(paymentEntity);
-      orderEntity.fail();
-      await this.orderRepository.updateStatus(
-        orderEntity.id,
-        OrderStatus.CANCELLED,
-      );
+      if (paymentEntity && 'fail' in paymentEntity) {
+        (paymentEntity as PaymentEntity).fail();
+        await this.paymentRepository.update(paymentEntity as PaymentEntity);
+      }
+      if (orderEntity && 'fail' in orderEntity) {
+        (orderEntity as OrderEntity).fail();
+        await this.orderRepository.updateStatus(
+          (orderEntity as OrderEntity).id,
+          OrderStatus.CANCELLED,
+        );
+      }
 
       throw error;
     }

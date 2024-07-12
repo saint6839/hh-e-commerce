@@ -29,6 +29,12 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
     private dataSource: DataSource,
   ) {}
 
+  /**
+   * 주문시 상품 재고를 감소시키고 주문서와 결제 초기데이터를 생성하는 usecase
+   * 주문이 일어날 경우 먼저 가재고 방식으로 상품 재고를 감소시킨 후 주문서와 결제 초기데이터를 생성합니다.
+   * 만약, 일정 시간 동안 결제가 일어나지 않았을 경우 재고를 다시 증가시킵니다.(EventEmitter로 구현)
+   * @returns
+   */
   async execute(dto: CreateOrderFacadeDto): Promise<OrderDto> {
     return this.dataSource.transaction(async (entityManager) => {
       await Promise.all(

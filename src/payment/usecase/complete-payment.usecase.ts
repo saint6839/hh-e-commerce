@@ -36,6 +36,10 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 외부 결제 mockAPI 서버로 요청을 보내 받아온 정보로 결제의 유효성 여부를 검사하고 주문서와 결제 상태를 업데이트하는 usecase
+   * @returns
+   */
   async execute(
     dto: CompletePaymentDto,
     entityManager?: EntityManager,
@@ -48,11 +52,10 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
         entityManager,
       );
 
-      const isValid = await this.isValidTransactionResult(dto, paymentEntity);
       const updatedPaymentEntity = await this.updatePaymentAndOrderStatus(
+        dto,
         paymentEntity,
         orderEntity,
-        true,
         entityManager,
       );
 
@@ -104,11 +107,13 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
   }
 
   private async updatePaymentAndOrderStatus(
+    dto: CompletePaymentDto,
     paymentEntity: PaymentEntity,
     orderEntity: OrderEntity,
-    isValid: boolean,
     entityManager: EntityManager,
   ): Promise<PaymentEntity> {
+    const isValid = await this.isValidTransactionResult(dto, paymentEntity);
+
     if (isValid) {
       paymentEntity.complete();
       orderEntity.complete();

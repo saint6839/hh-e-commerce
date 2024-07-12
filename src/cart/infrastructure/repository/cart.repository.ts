@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ICartRepository } from 'src/cart/domain/interface/repository/cart.repository.interface';
 import { BaseRepository } from 'src/common/interface/repository/base.repository.abstract';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, IsNull, Repository } from 'typeorm';
 import { CartEntity } from '../entity/cart.entity';
 
 @Injectable()
@@ -35,6 +35,7 @@ export class CartRepository
         repo.find({
           where: {
             userId,
+            deletedAt: IsNull(),
           },
         }),
       entityManager,

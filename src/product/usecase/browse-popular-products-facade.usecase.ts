@@ -24,6 +24,11 @@ export class BrowsePopularProductsFacadeUseCase
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 특정 기간 동안의 인기 상품 상위 5개를 조회하는 usecase
+   * @param dto 조회하려는 날짜 범위를 클라이언트에서 지정할 수 있도록 해두었습니다
+   * @returns
+   */
   async execute(
     dto: BrowsePopularProductsFacadeDto,
     entityManager?: EntityManager,

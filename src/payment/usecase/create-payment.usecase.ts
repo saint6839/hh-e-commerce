@@ -17,6 +17,10 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 주문시 결제 초기 데이터를 생성하는 usecase
+   * @returns
+   */
   async execute(
     dto: PaymentDto,
     entityManager?: EntityManager,

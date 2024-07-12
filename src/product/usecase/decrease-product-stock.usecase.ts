@@ -28,6 +28,10 @@ export class DecreaseProductStockUseCase
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 주문서 생성시 특정 상품의 재고를 감소 시키는 usecase
+   * @returns
+   */
   async execute(
     dto: DecreaseProductStockDto,
     entityManager?: EntityManager,

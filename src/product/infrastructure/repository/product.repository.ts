@@ -19,7 +19,7 @@ export class ProductRepository
 
   async findById(
     id: number,
-    entityManager?: EntityManager | undefined,
+    entityManager?: EntityManager,
   ): Promise<ProductEntity | null> {
     return this.executeQuery(
       (repo) => repo.findOne({ where: { id, deletedAt: IsNull() } }),
@@ -27,9 +27,11 @@ export class ProductRepository
     );
   }
 
-  async findAll(
-    entityManager?: EntityManager | undefined,
-  ): Promise<ProductEntity[]> {
+  /**
+   * 상품의 상태에 대한 정확한 요구사항은 없었기에, 상품 status 활성/비활성 여부를 조회 조건에 포함시키지는 않았습니다.
+   * @returns
+   */
+  async findAll(entityManager?: EntityManager): Promise<ProductEntity[]> {
     return this.executeQuery(
       (repo) =>
         repo.find({

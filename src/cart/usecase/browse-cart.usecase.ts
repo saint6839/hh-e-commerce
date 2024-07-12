@@ -23,6 +23,10 @@ export class BrowseCartUseCase implements IBrowseCartUseCase {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 장바구니 상품 목록을 조회하는 usecase
+   * @returns
+   */
   async execute(
     userId: number,
     entityManager?: EntityManager,

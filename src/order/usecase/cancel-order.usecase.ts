@@ -31,6 +31,9 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
     private dataSource: DataSource,
   ) {}
 
+  /**
+   * 주문시 이후에 일정 시간동안 결제가 일어나지 않았을 경우, 주문을 취소하고 재고를 다시 증가시키는 usecase
+   */
   async execute(orderId: number): Promise<void> {
     await this.dataSource.transaction(async (transactionalEntityManager) => {
       const order = await this.findAndValidateOrder(

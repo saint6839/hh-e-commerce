@@ -16,6 +16,10 @@ export class ChargeUserUseCase implements IChargeUserUsecase {
     private readonly userRepository: IUserRepository,
   ) {}
 
+  /**
+   * 특정 사용자의 잔액을 충전하는 usecase
+   * @returns
+   */
   async execute(input: ChargeUserDto): Promise<UserDto> {
     const entity = await this.userRepository.findById(input.userId);
     if (!entity) {

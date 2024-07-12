@@ -39,6 +39,10 @@ export class CreateOrderUseCase implements ICreateOrderUseCase {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 주문시 주문서 초기 데이터를 생성하는 usecase
+   * @returns
+   */
   async execute(
     dto: CreateOrderFacadeDto,
     entityManager?: EntityManager,

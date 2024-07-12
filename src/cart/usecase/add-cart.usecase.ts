@@ -25,6 +25,10 @@ export class AddCartUseCase implements IAddCartUseCase {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 장바구니에 상품을 추가하는 usecase
+   * @returns
+   */
   async execute(
     dto: AddCartProductDetailDto,
     entityManager?: EntityManager,

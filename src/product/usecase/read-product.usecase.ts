@@ -22,7 +22,7 @@ export class ReadProductUseCase implements IReadProductUseCase {
   ) {}
 
   /**
-   * 특정 상품을 조회하는 usecase
+   * 특정 상품과 해당 상품에 속한 옵션들을 조회하는 usecase
    * @param productId
    * @returns
    */

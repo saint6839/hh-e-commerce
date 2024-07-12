@@ -14,6 +14,9 @@ export class DeleteCartUseCase implements IDeleteCartUsecase {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 장방구니 상품을 삭제하는 usecase
+   */
   async execute(cartId: number, entityManager?: EntityManager): Promise<void> {
     const transactionCallback = async (
       transactionalEntityManager: EntityManager,
