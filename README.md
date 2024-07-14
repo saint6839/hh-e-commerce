@@ -52,62 +52,71 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  Controller ->> PopularProductsFacadeUseCase: 상위 상품 조회 요청 (기간: 최근 3일)
-  PopularProductsFacadeUseCase ->> GetOrdersUseCase: 최근 3일간 주문 데이터 조회 요청
-  GetOrdersUseCase ->> Database: 최근 3일간 주문 데이터 조회 쿼리
-  Database -->> GetOrdersUseCase: 주문 데이터 반환
-  GetOrdersUseCase -->> PopularProductsFacadeUseCase: 주문 데이터 반환
-
-  PopularProductsFacadeUseCase ->> AggregateProductSalesUseCase: 주문 데이터 집계 요청
-  AggregateProductSalesUseCase ->> Database: 주문 데이터 기반 상품 판매량 집계 쿼리
-  Database -->> AggregateProductSalesUseCase: 집계된 상품 판매량 데이터 반환
-  AggregateProductSalesUseCase -->> PopularProductsFacadeUseCase: 집계된 상품 판매량 데이터 반환
-
-  PopularProductsFacadeUseCase ->> GetProductDetailsUseCase: 상위 5개 상품 정보 요청
-  GetProductDetailsUseCase ->> Database: 상위 5개 상품 정보 조회 쿼리
-  Database -->> GetProductDetailsUseCase: 상위 5개 상품 정보 반환
-  GetProductDetailsUseCase -->> PopularProductsFacadeUseCase: 상위 5개 상품 정보 반환
-
-  PopularProductsFacadeUseCase -->> Controller: 상위 5개 상품 정보 반환
+  Controller ->> BrowsePopularProductsFacadeUseCase: 특정 기간 동안의 상위 상품 조회 요청(from, to)
+  BrowsePopularProductsFacadeUseCase ->> Database: 특정 기간 동안의 판매량 상위 5개 항목 조회 쿼리
+  Database -->> BrowsePopularProductsFacadeUseCase: 조회 데이터 반환
+  BrowsePopularProductsFacadeUseCase ->> ReadProductUseCase: 조회된 상위 상품의 상세 정보 조회 요청
+  ReadProductUseCase -->> BrowsePopularProductsFacadeUseCase: 각 상품 데이터 상세정보 조회 결과 반환
+  BrowsePopularProductsFacadeUseCase -->> Controller: 결과 반환
 ```
 
 ### 💸주문 / 결제 API
 
+#### 주문 생성
+
 ```mermaid
 sequenceDiagram
-  Controller ->> OrderPaymentFacadeUseCase: 주문 / 결제 요청 (userId, 상품 목록)
-  OrderPaymentFacadeUseCase ->> ValidateStockUseCase: 상품 재고 확인 요청 (상품 목록)
-  ValidateStockUseCase ->> Database: 상품 재고 조회 쿼리
-  Database -->> ValidateStockUseCase: 상품 재고 데이터 반환
-  ValidateStockUseCase -->> OrderPaymentFacadeUseCase: 재고 확인 결과 반환
-
-  alt 재고 충분함
-    OrderPaymentFacadeUseCase ->> ValidateBalanceUseCase: 사용자 잔액 확인 요청 (userId, 총 금액)
-    ValidateBalanceUseCase ->> Database: 사용자 잔액 조회 쿼리
-    Database -->> ValidateBalanceUseCase: 사용자 잔액 데이터 반환
-    ValidateBalanceUseCase -->> OrderPaymentFacadeUseCase: 잔액 확인 결과 반환
-
-    alt 잔액 충분함
-      OrderPaymentFacadeUseCase ->> DeductBalanceUseCase: 사용자 잔액 차감 요청 (userId, 총 금액)
-      DeductBalanceUseCase ->> Database: 사용자 잔액 차감 쿼리
-      Database -->> DeductBalanceUseCase: 잔액 차감 결과 반환
-      DeductBalanceUseCase -->> OrderPaymentFacadeUseCase: 잔액 차감 완료
-
-      OrderPaymentFacadeUseCase ->> PlaceOrderUseCase: 주문 생성 요청 (userId, 상품 목록)
-      PlaceOrderUseCase ->> Database: 주문 생성 쿼리
-      Database -->> PlaceOrderUseCase: 주문 생성 결과 반환
-      PlaceOrderUseCase -->> OrderPaymentFacadeUseCase: 주문 생성 완료
-
-      OrderPaymentFacadeUseCase ->> ExternalDataPlatform: 주문 데이터 전송
-      ExternalDataPlatform -->> OrderPaymentFacadeUseCase: 데이터 전송 확인
-
-      OrderPaymentFacadeUseCase -->> Controller: 주문 / 결제 완료 반환
-    else 잔액 부족
-      OrderPaymentFacadeUseCase -->> Controller: 잔액 부족 오류 반환
+    Client->>OrderController: POST /api/v1/orders (CreateOrderFacadeDto)
+    OrderController->>CreateOrderFacadeUseCase: execute(CreateOrderFacadeDto)
+    CreateOrderFacadeUseCase->>DataSource: transaction 시작
+    loop 각 상품 옵션에 대해
+        CreateOrderFacadeUseCase->>DecreaseProductStockUseCase: execute(DecreaseProductStockDto)
+        DecreaseProductStockUseCase-->>CreateOrderFacadeUseCase: 재고 감소 결과
     end
-  else 재고 부족
-    OrderPaymentFacadeUseCase -->> Controller: 재고 부족 오류 반환
-  end
+    CreateOrderFacadeUseCase->>CreateOrderUseCase: execute(CreateOrderFacadeDto)
+    CreateOrderUseCase-->>CreateOrderFacadeUseCase: OrderDto
+    CreateOrderFacadeUseCase->>CreatePaymentUseCase: execute(PaymentDto)
+    CreatePaymentUseCase-->>CreateOrderFacadeUseCase: 결제 초기 데이터 생성 결과
+    CreateOrderFacadeUseCase->>EventEmitter: emit('order.created', {orderId})
+    DataSource-->>CreateOrderFacadeUseCase: transaction 완료
+    CreateOrderFacadeUseCase-->>OrderController: OrderDto
+    OrderController-->>Client: 201 Created (OrderDto)
+```
+
+#### 결제 처리
+
+```mermaid
+sequenceDiagram
+    Controller->>CompletePaymentFacadeUseCase: execute(CompletePaymentFacadeDto)
+    CompletePaymentFacadeUseCase->>DataSource: transaction 시작
+    DataSource-->>CompletePaymentFacadeUseCase: EntityManager 제공
+    CompletePaymentFacadeUseCase->>Database: 결제 정보 조회
+    Database-->>CompletePaymentFacadeUseCase: PaymentEntity 반환
+    CompletePaymentFacadeUseCase->>Database: 주문 정보 조회
+    Database-->>CompletePaymentFacadeUseCase: OrderEntity 반환
+    CompletePaymentFacadeUseCase->>Database: 주문 항목 조회
+    Database-->>CompletePaymentFacadeUseCase: OrderItemEntity[] 반환
+    CompletePaymentFacadeUseCase->>AccumulatePopularProductsSoldUseCase: execute(AccumulatePopularProductsSoldDto)
+    AccumulatePopularProductsSoldUseCase->>Database: 인기 상품 판매량 누적
+    Database-->>AccumulatePopularProductsSoldUseCase: 누적 완료
+    AccumulatePopularProductsSoldUseCase-->>CompletePaymentFacadeUseCase: 실행 완료
+    CompletePaymentFacadeUseCase->>SpendUserBalanceUsecase: execute(SpendBalanceDto)
+    SpendUserBalanceUsecase->>Database: 사용자 잔액 차감
+    Database-->>SpendUserBalanceUsecase: 차감 완료
+    SpendUserBalanceUsecase-->>CompletePaymentFacadeUseCase: 실행 완료
+    CompletePaymentFacadeUseCase->>CompletePaymentUseCase: execute(CompletePaymentDto)
+    CompletePaymentUseCase->>Database: 결제 완료 처리
+    Database-->>CompletePaymentUseCase: 처리 완료
+    CompletePaymentUseCase-->>CompletePaymentFacadeUseCase: PaymentResultDto 반환
+    alt 트랜잭션 성공
+        DataSource-->>CompletePaymentFacadeUseCase: 트랜잭션 커밋
+        CompletePaymentFacadeUseCase-->>Controller: PaymentResultDto 반환
+    else 트랜잭션 실패
+        DataSource-->>CompletePaymentFacadeUseCase: 트랜잭션 롤백
+        CompletePaymentFacadeUseCase->>Database: 결제 실패 상태 업데이트
+        CompletePaymentFacadeUseCase->>Database: 주문 취소 상태 업데이트
+        CompletePaymentFacadeUseCase-->>Controller: 에러 throw
+    end
 ```
 
 ### 🛒장바구니 API
@@ -116,51 +125,46 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  Controller ->> AddToCartUseCase: 장바구니에 상품 추가 요청 (userId, productId, quantity)
-  AddToCartUseCase ->> Database: 사용자 장바구니 조회 쿼리 (userId)
-  Database -->> AddToCartUseCase: 장바구니 데이터 반환
-  alt 장바구니에 상품이 이미 있는 경우
-    AddToCartUseCase ->> Database: 장바구니 항목 업데이트 쿼리 (cartId, productId, quantity)
-  else 장바구니에 상품이 없는 경우
-    AddToCartUseCase ->> Database: 장바구니에 상품 추가 쿼리 (cartId, productId, quantity)
-  end
-  Database -->> AddToCartUseCase: 장바구니 업데이트 결과 반환
-  AddToCartUseCase -->> Controller: 장바구니 업데이트 완료 반환
-
+    Controller->>AddCartUseCase: execute(AddCartProductDetailDto)
+    AddCartUseCase->>Database: 상품 옵션 조회 (productOptionId)
+    Database-->>AddCartUseCase: ProductOptionEntity 반환
+    alt 상품 옵션이 존재하지 않는 경우
+        AddCartUseCase-->>Controller: NOT_FOUND_PRODUCT_OPTION_ERROR 발생
+    else 상품 옵션이 존재하는 경우
+        AddCartUseCase->>Database: 장바구니 항목 생성 (userId, productOptionId, quantity)
+        Database-->>AddCartUseCase: 생성된 CartEntity 반환
+        AddCartUseCase->>AddCartUseCase: CartDto 생성
+        AddCartUseCase-->>Controller: CartDto 반환
+    end
 ```
 
 **장바구니 상품 삭제 API**
 
 ```mermaid
 sequenceDiagram
-  Controller ->> RemoveFromCartUseCase: 장바구니에서 상품 삭제 요청 (userId, productId)
-  RemoveFromCartUseCase ->> Database: 사용자 장바구니 조회 쿼리 (userId)
-  Database -->> RemoveFromCartUseCase: 장바구니 데이터 반환
-  alt 장바구니에 상품이 있는 경우
-    RemoveFromCartUseCase ->> Database: 장바구니에서 상품 삭제 쿼리 (cartId, productId)
-    Database -->> RemoveFromCartUseCase: 장바구니 업데이트 결과 반환
-    RemoveFromCartUseCase -->> Controller: 장바구니 업데이트 완료 반환
-  else 장바구니에 상품이 없는 경우
-    RemoveFromCartUseCase -->> Controller: 상품이 장바구니에 없음 오류 반환
-  end
+    Controller->>DeleteCartUseCase: execute(cartId)
+    DeleteCartUseCase->>Database: 장바구니 항목 삭제 (cartId)
+    Database-->>DeleteCartUseCase: 삭제 결과 반환
+    DeleteCartUseCase-->>Controller: void (삭제 완료)
 ```
 
 **장바구니 상품 조회 API**
 
 ```mermaid
 sequenceDiagram
-  Controller ->> ViewCartFacadeUseCase: 장바구니 조회 요청 (userId)
-  ViewCartFacadeUseCase ->> BrowseCartItemsUseCase: 장바구니 항목 조회 요청 (userId)
-  BrowseCartItemsUseCase ->> Database: 사용자 장바구니 항목 조회 쿼리 (userId)
-  Database -->> BrowseCartItemsUseCase: 장바구니 항목 데이터 반환 (cartItems)
-  BrowseCartItemsUseCase -->> ViewCartFacadeUseCase: 장바구니 항목 데이터 반환
-
-  ViewCartFacadeUseCase ->> BrowseProductsUseCase: 상품 상세 정보 조회 요청 (productIds)
-  BrowseProductsUseCase ->> Database: 상품 상세 정보 조회 쿼리 (productIds)
-  Database -->> BrowseProductsUseCase: 상품 상세 정보 반환
-  BrowseProductsUseCase -->> ViewCartFacadeUseCase: 상품 상세 정보 반환
-
-  ViewCartFacadeUseCase -->> Controller: 장바구니 상세 정보 반환
+    Controller->>BrowseCartUseCase: execute(userId)
+    BrowseCartUseCase->>Database: 사용자의 장바구니 항목 조회 (userId)
+    Database-->>BrowseCartUseCase: 장바구니 항목 반환
+    alt 장바구니가 비어있는 경우
+        BrowseCartUseCase-->>Controller: 빈 배열 반환
+    else 장바구니에 항목이 있는 경우
+        BrowseCartUseCase->>Database: 상품 옵션 정보 조회 (productOptionIds)
+        Database-->>BrowseCartUseCase: 상품 옵션 정보 반환
+        loop 각 장바구니 항목에 대해
+            BrowseCartUseCase->>BrowseCartUseCase: CartDto 생성
+        end
+        BrowseCartUseCase-->>Controller: CartDto 배열 반환
+    end
 ```
 
 # E-commerce ERDiagram
@@ -177,8 +181,7 @@ erDiagram
   products {
     long id
     varchar name
-    long price
-    int stock
+    enum status
     datetime deletedAt
   }
 
@@ -186,7 +189,7 @@ erDiagram
     long id
     long userId
     long totalPrice
-    varchar status
+    enum status
     datetime orderedAt
     datetime deletedAt
   }
@@ -194,29 +197,36 @@ erDiagram
   order_items {
     long id
     long orderId
-    long productId
+    long productOptionId
+    varchar productName
     int quantity
-    long price
+    long totalPriceAtOrder
+    datetime deletedAt
+  }
+
+  payments {
+    long id
+    long userId
+    long orderId
+    long amount
+    enum paymentMethod
+    enum status
+    datetime paidAt
     datetime deletedAt
   }
 
   carts {
     long id
     long userId
-    datetime deletedAt
-  }
-
-  cart_items {
-    long id
-    long cartId
-    long productId
+    long productOptionId
     int quantity
     datetime deletedAt
   }
 
-  popular_products {
+  daily_popular_products {
     long id
     long productId
+    long productOptionId
     int totalSold
     date soldDate
     datetime updatedAt
@@ -226,7 +236,7 @@ erDiagram
   users ||--o{ orders : "has"
   orders ||--o{ order_items : "contains"
   products ||--o{ order_items : "is in"
-  carts ||--o{ cart_items : "contains"
-  products ||--o{ cart_items : "is in"
-  products ||--o{ popular_products : "is"
+
+  products ||--o{ daily_popular_products : "is"
+  orders ||--|| payments : "has"
 ```

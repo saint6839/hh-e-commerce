@@ -23,7 +23,6 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const errorResponse = new ApiResponseDto(
       false,
       typeof message === 'string' ? message : (message as any).message,
-      null,
     );
 
     response.status(status).json(errorResponse);

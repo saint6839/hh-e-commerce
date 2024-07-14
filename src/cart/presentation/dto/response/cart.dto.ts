@@ -1,11 +1,17 @@
-import { CartItemDto } from './cart-item.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { ProductOptionDto } from 'src/product/presentation/dto/response/product-option.dto';
 
 export class CartDto {
-  readonly userId: number;
-  readonly cartItems: CartItemDto[];
+  @ApiProperty({ example: 1 })
+  readonly id: number;
+  @ApiProperty({ type: ProductOptionDto })
+  readonly productOption: ProductOptionDto;
+  @ApiProperty({ example: 1 })
+  readonly quantity: number;
 
-  constructor(userId: number, cartItems: CartItemDto[]) {
-    this.userId = userId;
-    this.cartItems = cartItems;
+  constructor(id: number, productOption: ProductOptionDto, quantity: number) {
+    this.id = id;
+    this.productOption = productOption;
+    this.quantity = quantity;
   }
 }

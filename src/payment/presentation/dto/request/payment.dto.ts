@@ -1,0 +1,34 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { PaymentMethod } from 'src/payment/domain/enum/payment-method.enum';
+
+export class PaymentDto {
+  @IsNumber()
+  @ApiProperty({ example: 1 })
+  readonly userId: number;
+
+  @IsNumber()
+  @ApiProperty({ example: 1 })
+  readonly orderId: number;
+
+  @IsNumber()
+  @ApiProperty({ example: 1000 })
+  readonly amount: number;
+
+  @IsEnum(PaymentMethod)
+  @IsOptional()
+  @ApiProperty({ enum: PaymentMethod, example: PaymentMethod.CARD })
+  readonly paymentMethod?: PaymentMethod;
+
+  constructor(
+    userId: number,
+    orderId: number,
+    amount: number,
+    paymentMethod?: PaymentMethod,
+  ) {
+    this.userId = userId;
+    this.orderId = orderId;
+    this.amount = amount;
+    this.paymentMethod = paymentMethod;
+  }
+}
