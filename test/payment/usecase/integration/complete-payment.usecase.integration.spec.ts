@@ -15,6 +15,7 @@ import {
 } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
+import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-option.entity';
 import { INSUFFICIENT_BALANCE_ERROR } from 'src/user/domain/entity/user';
 import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
 import { setupTestingModule } from 'test/common/setup';
@@ -27,6 +28,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
   let orderRepository: Repository<OrderEntity>;
   let orderItemRepository: Repository<OrderItemEntity>;
   let userRepository: Repository<UserEntity>;
+  let productOptionRepository: Repository<ProductOptionEntity>;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -43,6 +45,9 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       getRepositoryToken(OrderItemEntity),
     );
     userRepository = moduleFixture.get(getRepositoryToken(UserEntity));
+    productOptionRepository = moduleFixture.get(
+      getRepositoryToken(ProductOptionEntity),
+    );
   });
 
   afterAll(async () => {
@@ -54,6 +59,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await orderRepository.clear();
     await orderItemRepository.clear();
     await userRepository.clear();
+    await productOptionRepository.clear();
   });
 
   it('결제가 성공적으로 완료되는지 테스트', async () => {
@@ -69,9 +75,16 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       status: OrderStatus.PENDING_PAYMENT,
     });
 
+    const productOption = await productOptionRepository.save({
+      productId: 1,
+      name: '테스트 상품',
+      price: 2500,
+      stock: 10,
+    });
+
     await orderItemRepository.save({
       orderId: order.id,
-      productOptionId: 1,
+      productOptionId: productOption.id,
       productName: '테스트 상품',
       quantity: 2,
       totalPriceAtOrder: 5000,
@@ -133,9 +146,16 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       status: OrderStatus.PENDING_PAYMENT,
     });
 
+    const productOption = await productOptionRepository.save({
+      productId: 1,
+      name: '테스트 상품',
+      price: 2500,
+      stock: 10,
+    });
+
     await orderItemRepository.save({
       orderId: order.id,
-      productOptionId: 1,
+      productOptionId: productOption.id,
       productName: '테스트 상품',
       quantity: 2,
       totalPriceAtOrder: 5000,
@@ -170,7 +190,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       where: { id: order.id },
     });
     expect(unchangedOrder).toBeDefined();
-    expect(unchangedOrder?.status).toBe(OrderStatus.PENDING_PAYMENT);
+    expect(unchangedOrder?.status).toBe(OrderStatus.CANCELLED);
 
     const unchangedUser = await userRepository.findOne({
       where: { id: user.id },

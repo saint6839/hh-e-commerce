@@ -10,13 +10,14 @@ import {
 } from 'src/product/infrastructure/entity/product.entity';
 import { ReadProductUseCase } from 'src/product/usecase/read-product.usecase';
 import { setupTestingModule } from 'test/common/setup';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 describe('ReadProductUseCase (통합 테스트)', () => {
   let app: INestApplication;
   let readProductUseCase: ReadProductUseCase;
   let productRepository: Repository<ProductEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
+  let dataSource: DataSource;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -30,6 +31,7 @@ describe('ReadProductUseCase (통합 테스트)', () => {
     productOptionRepository = moduleFixture.get(
       getRepositoryToken(ProductOptionEntity),
     );
+    dataSource = moduleFixture.get(DataSource);
   });
 
   afterEach(async () => {

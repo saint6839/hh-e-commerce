@@ -32,6 +32,8 @@ describe('BrowsePopularProductsFacadeUseCase (통합 테스트)', () => {
       getRepositoryToken(DailyPopularProductEntity),
     );
     dataSource = moduleFixture.get(DataSource);
+    await dailyPopularProductRepository.clear();
+    await productRepository.clear();
   });
 
   afterEach(async () => {
@@ -95,15 +97,12 @@ describe('BrowsePopularProductsFacadeUseCase (통합 테스트)', () => {
 
     const dto: BrowsePopularProductsFacadeDto = {
       from: new Date(new Date().setDate(new Date().getDate() - 1)),
-      to: new Date(),
+      to: new Date(new Date().setDate(new Date().getDate() + 1)),
     };
 
     // when
-    const result: ProductDto[] = await dataSource.transaction(
-      async (manager) => {
-        return await browsePopularProductsFacadeUseCase.execute(dto, manager);
-      },
-    );
+    const result: ProductDto[] =
+      await browsePopularProductsFacadeUseCase.execute(dto);
 
     // then
     expect(result).toHaveLength(5);
