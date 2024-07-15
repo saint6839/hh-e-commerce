@@ -3,7 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { IBrowseProductsUseCaseToken } from 'src/product/domain/interface/usecase/browse-products.usecase.interface';
 import { setupTestingModule } from 'test/common/setup';
-import { EntityManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ProductStatus } from '../../../../src/product/domain/enum/product-status.enum';
 import { ProductOptionEntity } from '../../../../src/product/infrastructure/entity/product-option.entity';
 import { ProductEntity } from '../../../../src/product/infrastructure/entity/product.entity';
@@ -14,7 +14,6 @@ describe('BrowseProductsUseCase (통합 테스트)', () => {
   let browseProductsUseCase: BrowseProductsUseCase;
   let productRepository: Repository<ProductEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
-  let entityManager: EntityManager;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -28,7 +27,6 @@ describe('BrowseProductsUseCase (통합 테스트)', () => {
     productOptionRepository = moduleFixture.get(
       getRepositoryToken(ProductOptionEntity),
     );
-    entityManager = moduleFixture.get(EntityManager);
     await productOptionRepository.clear();
     await productRepository.clear();
   });
