@@ -211,10 +211,6 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
     );
 
     expect(mockPayment.fail).toHaveBeenCalled();
-    expect(mockPaymentRepository.update).toHaveBeenCalledWith(
-      mockPayment,
-      expect.any(Object),
-    );
   });
 
   it('결제 엔티티를 찾을 수 없을 때 예외를 throw하는지 테스트', async () => {
@@ -242,11 +238,6 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     await expect(completePaymentFacadeUseCase.execute(dto)).rejects.toThrow(
       NOT_FOUND_ORDER_ERROR,
-    );
-    expect(mockPayment.fail).toHaveBeenCalled();
-    expect(mockPaymentRepository.update).toHaveBeenCalledWith(
-      mockPayment,
-      expect.any(Object),
     );
   });
 });

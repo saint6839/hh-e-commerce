@@ -29,6 +29,8 @@ describe('BrowseProductsUseCase (통합 테스트)', () => {
       getRepositoryToken(ProductOptionEntity),
     );
     entityManager = moduleFixture.get(EntityManager);
+    await productOptionRepository.clear();
+    await productRepository.clear();
   });
 
   afterEach(async () => {

@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DataSource, EntityManager } from 'typeorm';
 import {
   IProductOptionRepository,
   IProductOptionRepositoryToken,
@@ -19,6 +20,7 @@ export class ReadProductUseCase implements IReadProductUseCase {
     private readonly productRepository: IProductRepository,
     @Inject(IProductOptionRepositoryToken)
     private readonly productOptionRepository: IProductOptionRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -26,28 +28,39 @@ export class ReadProductUseCase implements IReadProductUseCase {
    * @param productId
    * @returns
    */
-  async execute(productId: number): Promise<ProductDto> {
-    const productEntity = await this.productRepository.findById(productId);
-    if (!productEntity)
-      throw new Error(NOT_FOUND_PRODUCT_ERROR + ': ' + productId);
+  async execute(
+    productId: number,
+    entityManager?: EntityManager,
+  ): Promise<ProductDto> {
+    const transactionCallback = async (manager: EntityManager) => {
+      const productEntity = await this.productRepository.findById(productId);
+      if (!productEntity)
+        throw new Error(NOT_FOUND_PRODUCT_ERROR + ': ' + productId);
 
-    const productOptionEntities =
-      await this.productOptionRepository.findByProductId(productId);
+      const productOptionEntities =
+        await this.productOptionRepository.findByProductId(productId);
 
-    return new ProductDto(
-      productEntity.id,
-      productEntity.name,
-      productOptionEntities.map(
-        (productOptionEntity) =>
-          new ProductOptionDto(
-            productOptionEntity.id,
-            productOptionEntity.name,
-            productOptionEntity.price,
-            productOptionEntity.stock,
-            productOptionEntity.productId,
-          ),
-      ),
-      productEntity.status,
-    );
+      return new ProductDto(
+        productEntity.id,
+        productEntity.name,
+        productOptionEntities.map(
+          (productOptionEntity) =>
+            new ProductOptionDto(
+              productOptionEntity.id,
+              productOptionEntity.name,
+              productOptionEntity.price,
+              productOptionEntity.stock,
+              productOptionEntity.productId,
+            ),
+        ),
+        productEntity.status,
+      );
+    };
+
+    if (entityManager) {
+      return transactionCallback(entityManager);
+    } else {
+      return await this.dataSource.transaction(transactionCallback);
+    }
   }
 }

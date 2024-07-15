@@ -40,6 +40,9 @@ describe('AccumulatePopularProductsSoldUseCase (통합 테스트)', () => {
       getRepositoryToken(DailyPopularProductEntity),
     );
     dataSource = moduleFixture.get(DataSource);
+    await dailyPopularProductRepository.clear();
+    await productOptionRepository.clear();
+    await productRepository.clear();
   });
 
   afterEach(async () => {

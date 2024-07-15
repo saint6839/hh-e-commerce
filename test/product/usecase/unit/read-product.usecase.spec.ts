@@ -15,11 +15,13 @@ import {
 } from 'src/product/infrastructure/entity/product.entity';
 import { ProductDto } from 'src/product/presentation/dto/response/product.dto';
 import { ReadProductUseCase } from 'src/product/usecase/read-product.usecase';
+import { DataSource, EntityManager } from 'typeorm';
 
 describe('ReadProductUseCase', () => {
   let useCase: ReadProductUseCase;
   let mockProductRepository: jest.Mocked<IProductRepository>;
   let mockProductOptionRepository: jest.Mocked<IProductOptionRepository>;
+  let mockDataSource: jest.Mocked<DataSource>;
 
   beforeEach(async () => {
     mockProductRepository = {
@@ -27,6 +29,9 @@ describe('ReadProductUseCase', () => {
     } as any;
     mockProductOptionRepository = {
       findByProductId: jest.fn(),
+    } as any;
+    mockDataSource = {
+      transaction: jest.fn((callback) => callback({} as EntityManager)),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -39,6 +44,10 @@ describe('ReadProductUseCase', () => {
         {
           provide: IProductOptionRepositoryToken,
           useValue: mockProductOptionRepository,
+        },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
         },
       ],
     }).compile();
