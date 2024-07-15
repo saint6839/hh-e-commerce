@@ -1,8 +1,8 @@
-import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartModule } from './cart/cart.module';
+import { LoggerService } from './common/logger/logger.service';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
 import { ProductModule } from './product/product.module';
@@ -27,12 +27,8 @@ import { UserModule } from './user/user.module';
     PaymentModule,
     EventEmitterModule.forRoot(),
   ],
+  exports: [LoggerService],
   controllers: [],
-  providers: [
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
-  ],
+  providers: [LoggerService],
 })
 export class AppModule {}

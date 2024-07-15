@@ -3,10 +3,16 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ApiExceptionFilter } from './common/filter/api-exception.filter';
+import { HttpLoggerInterceptor } from './common/interceptior/http-logger.interceptor';
+import { LoggerService } from './common/logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalFilters(new ApiExceptionFilter());
+  const logger = new LoggerService();
+  app.useLogger(logger);
+
+  app.useGlobalFilters(new ApiExceptionFilter(logger));
+  app.useGlobalInterceptors(new HttpLoggerInterceptor(logger));
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
