@@ -5,7 +5,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
 
     services:
@@ -20,20 +20,14 @@ jobs:
           - 3308:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-    strategy:
-      matrix:
-        node-version: [18.x]
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install yarn
-        run: npm install -g yarn
+          node-version: 18.x
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -50,6 +44,11 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Build
+        run: yarn build
+        env:
+          NODE_ENV: production
+
       - name: Run tests
         run: yarn test
         env:
@@ -59,30 +58,14 @@ jobs:
           DB_PASSWORD: testpassword
           DB_DATABASE: testdb
 
-      - name: Build project
-        run: yarn build
+      - name: Run lint
+        run: yarn lint
 
-      - name: Build Docker image
-        run: |
-          docker build \
-            --build-arg DB_HOST=${{ secrets.DB_HOST }} \
-            --build-arg DB_PORT=${{ secrets.DB_PORT }} \
-            --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            --build-arg DB_DATABASE=${{ secrets.DB_DATABASE }} \
-            -t hh-e-commerce:${{ github.sha }} .
+      - name: Generate test coverage report
+        run: yarn test:cov
 
-      - name: Test Docker image
-        run: |
-          docker run -d --name test-app \
-            -e NODE_ENV=production \
-            -e DB_HOST=${{ secrets.DB_HOST }} \
-            -e DB_PORT=${{ secrets.DB_PORT }} \
-            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -e DB_DATABASE=${{ secrets.DB_DATABASE }} \
-            --network ${{ job.services.mysql.network }} \
-            hh-e-commerce:${{ github.sha }}
-          docker ps
-          sleep 10
-          docker logs test-app
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: coverage
