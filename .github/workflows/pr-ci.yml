@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [18.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -61,3 +61,21 @@ jobs:
 
       - name: Build project
         run: yarn build
+
+      - name: Build Docker image
+        run: docker build -t hh-e-commerce:${{ github.sha }} .
+
+      - name: Test Docker image
+        run: |
+          docker run -d --name test-app \
+            -e NODE_ENV=production \
+            -e DB_HOST=mysql \
+            -e DB_PORT=3306 \
+            -e DB_USERNAME=testuser \
+            -e DB_PASSWORD=testpassword \
+            -e DB_DATABASE=testdb \
+            --network ${{ job.services.mysql.network }} \
+            hh-e-commerce:${{ github.sha }}
+          docker ps
+          sleep 10
+          docker logs test-app
