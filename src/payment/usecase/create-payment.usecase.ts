@@ -34,7 +34,8 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
       );
 
       this.loggerService.log(
-        `결제 요청 생성 완료 : PaymentID: ${paymentEntity.id}, UserID: ${paymentEntity.userId}, OrderID: ${paymentEntity.orderId}, Amount: ${paymentEntity.amount}`,
+        `결제 요청 생성 완료 : PaymentID=${paymentEntity.id}, UserID=${paymentEntity.userId}, OrderID=${paymentEntity.orderId}, Amount=${paymentEntity.amount}`,
+        CreatePaymentUseCase.name,
       );
 
       return new PaymentResultDto(

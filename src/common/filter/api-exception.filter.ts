@@ -6,6 +6,7 @@ import {
   Injectable,
   LoggerService,
 } from '@nestjs/common';
+import { LogLevel } from 'typeorm';
 import { ApiResponseDto } from '../api/api-response.dto';
 
 @Injectable()
@@ -29,6 +30,20 @@ export class ApiExceptionFilter implements ExceptionFilter {
       typeof message === 'string' ? message : (message as any).message,
     );
 
+    this.loggingExceptionHandling(request, status, errorResponse, exception);
+    response.status(status).json(errorResponse);
+  }
+
+  /**
+   * 클라이언트측의 오류는 상대적으로 오류의 중요도가 낮다고 판단하여 warn 로깅
+   * 서버측의 오류는 상대적으로 오류의 중요도가 높다고 판단하여 error 로깅
+   */
+  private loggingExceptionHandling(
+    request: any,
+    status: number,
+    errorResponse: ApiResponseDto<any>,
+    exception: any,
+  ) {
     const logMessage = {
       timestamp: new Date().toISOString(),
       path: request.url,
@@ -39,9 +54,19 @@ export class ApiExceptionFilter implements ExceptionFilter {
       body: this.sanitizeBody(request.body),
     };
 
-    this.logger.error(JSON.stringify(logMessage), exception.stack);
+    const logLevel = this.getLogLevel(status);
+    const exceptionStack = exception instanceof Error ? exception.stack : '';
+    this.logger[logLevel](logMessage, exceptionStack);
+  }
 
-    response.status(status).json(errorResponse);
+  private getLogLevel(status: number): LogLevel {
+    if (status >= 500) {
+      return 'error';
+    }
+    if (status >= 400) {
+      return 'warn';
+    }
+    return 'error';
   }
 
   /**

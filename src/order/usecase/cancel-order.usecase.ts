@@ -48,7 +48,10 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
 
       await this.cancelOrder(order, transactionalEntityManager);
       await this.restoreProductOptionStock(order, transactionalEntityManager);
-      this.loggerService.log(`주문 취소 완료 OrderID: ${order.id}`);
+      this.loggerService.log(
+        `주문 취소 완료 OrderID: ${order.id}`,
+        CancelOrderUseCase.name,
+      );
     });
   }
 

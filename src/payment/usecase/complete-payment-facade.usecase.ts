@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import {
   IOrderItemRepository,
@@ -60,6 +61,7 @@ export class CompletePaymentFacadeUseCase
     @Inject(ISpendUserBalanceUsecaseToken)
     private readonly spendUserBalanceUsecase: ISpendUserBalanceUsecase,
     private readonly dataSource: DataSource,
+    private readonly loggerService: LoggerService,
   ) {}
 
   /**
@@ -131,6 +133,9 @@ export class CompletePaymentFacadeUseCase
           OrderStatus.CANCELLED,
         );
       }
+      this.loggerService.warn(
+        `결제 실패 : UserID=${dto.userId} PaymentID=${dto.paymentId} Error=${error.message}`,
+      );
 
       throw error;
     }

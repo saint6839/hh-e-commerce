@@ -63,6 +63,7 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
 
       this.loggerService.log(
         `결제 완료: PaymentID=${updatedPaymentEntity.id}, UserID=${updatedPaymentEntity.userId}, OrderID=${updatedPaymentEntity.orderId}, Amount=${updatedPaymentEntity.amount}, Status=${updatedPaymentEntity.status}`,
+        CompletePaymentUseCase.name,
       );
 
       return new PaymentResultDto(

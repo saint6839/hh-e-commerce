@@ -62,6 +62,7 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
       this.eventEmitter.emit('order.created', { orderId: orderDto.id });
       this.loggerService.log(
         `주문 생성 완료 : OrderID=${orderDto.id}, UserID=${dto.userId}`,
+        CreateOrderFacadeUseCase.name,
       );
       return orderDto;
     });

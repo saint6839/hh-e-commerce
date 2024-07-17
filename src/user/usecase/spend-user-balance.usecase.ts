@@ -41,6 +41,7 @@ export class SpendUserBalanceUseCase implements ISpendUserBalanceUsecase {
 
       this.loggerService.log(
         `사용자 잔액 차감 완료 : UserID=${updatedUser.id}, Amount=${dto.amount}`,
+        SpendUserBalanceUseCase.name,
       );
       return User.fromEntity(updatedUserEntity).toDto();
     };

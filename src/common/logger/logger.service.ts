@@ -6,8 +6,12 @@ export class LoggerService extends ConsoleLogger {
     super.error(message, trace);
   }
 
-  warn(message: string) {
-    super.warn(message);
+  warn(message: string, context?: string) {
+    if (context) {
+      super.warn(message, context);
+    } else {
+      super.warn(message);
+    }
   }
 
   /**
@@ -21,11 +25,19 @@ export class LoggerService extends ConsoleLogger {
     }
   }
 
-  debug(message: string) {
-    super.debug(message);
+  debug(message: string, context?: string) {
+    if (context) {
+      super.debug(message, context);
+    } else {
+      super.debug(message);
+    }
   }
 
-  verbose(message: string) {
-    super.verbose(message);
+  verbose(message: string, context?: string) {
+    if (context) {
+      super.verbose(message, context);
+    } else {
+      super.verbose(message);
+    }
   }
 }

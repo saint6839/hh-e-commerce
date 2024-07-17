@@ -33,6 +33,7 @@ export class ChargeUserUseCase implements IChargeUserUsecase {
 
     this.loggerService.log(
       `사용자 잔액 충전 완료 : UserID=${chargedUser.id}, Amount=${chargedUser.balance}`,
+      ChargeUserUseCase.name,
     );
     return chargedUser.toDto();
   }
