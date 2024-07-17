@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { User } from '../domain/entity/user';
 import {
   IUserRepository,
@@ -14,6 +15,7 @@ export class ChargeUserUseCase implements IChargeUserUsecase {
   constructor(
     @Inject(IUserRepositoryToken)
     private readonly userRepository: IUserRepository,
+    private readonly loggerService: LoggerService,
   ) {}
 
   /**
@@ -28,6 +30,10 @@ export class ChargeUserUseCase implements IChargeUserUsecase {
     const user = User.fromEntity(entity).charge(input.amount);
     const chargedUserEntity = await this.userRepository.update(user.toEntity());
     const chargedUser = User.fromEntity(chargedUserEntity);
+
+    this.loggerService.log(
+      `사용자 잔액 충전 완료 : UserID=${chargedUser.id}, Amount=${chargedUser.balance}`,
+    );
     return chargedUser.toDto();
   }
 }

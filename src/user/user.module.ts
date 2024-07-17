@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { IUserRepositoryToken } from './domain/interface/repository/user.repository.interface';
 import { IChargeUserUsecaseToken } from './domain/interface/usecase/charge-user.usecase.interface';
 import { IReadUserUsecaseToken } from './domain/interface/usecase/read-user.usecase.interface';
@@ -32,6 +33,7 @@ import { SpendUserBalanceUseCase } from './usecase/spend-user-balance.usecase';
       provide: ISpendUserBalanceUsecaseToken,
       useClass: SpendUserBalanceUseCase,
     },
+    LoggerService,
   ],
 })
 export class UserModule {}

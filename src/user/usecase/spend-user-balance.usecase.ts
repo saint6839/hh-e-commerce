@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { DataSource, EntityManager } from 'typeorm';
 import { User } from '../domain/entity/user';
 import {
@@ -16,6 +17,7 @@ export class SpendUserBalanceUseCase implements ISpendUserBalanceUsecase {
     @Inject(IUserRepositoryToken)
     private readonly userRepository: IUserRepository,
     private readonly dataSource: DataSource,
+    private readonly loggerService: LoggerService,
   ) {}
 
   async execute(
@@ -35,6 +37,10 @@ export class SpendUserBalanceUseCase implements ISpendUserBalanceUsecase {
       const updatedUserEntity = await this.userRepository.update(
         updatedUser.toEntity(),
         entityManager,
+      );
+
+      this.loggerService.log(
+        `사용자 잔액 차감 완료 : UserID=${updatedUser.id}, Amount=${dto.amount}`,
       );
       return User.fromEntity(updatedUserEntity).toDto();
     };

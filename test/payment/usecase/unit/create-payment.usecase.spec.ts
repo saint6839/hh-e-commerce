@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { PaymentMethod } from 'src/payment/domain/enum/payment-method.enum';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 import { IPaymentRepositoryToken } from 'src/payment/domain/interface/repository/payment.repository.interface';
@@ -12,6 +13,7 @@ describe('CreatePaymentUseCase 단위 테스트', () => {
   let createPaymentUseCase: CreatePaymentUseCase;
   let mockPaymentRepository: any;
   let mockDataSource: any;
+  let mockLoggerService: any;
 
   beforeEach(async () => {
     mockPaymentRepository = {
@@ -19,6 +21,10 @@ describe('CreatePaymentUseCase 단위 테스트', () => {
     };
     mockDataSource = {
       transaction: jest.fn((callback) => callback({})),
+    };
+
+    mockLoggerService = {
+      log: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -31,6 +37,10 @@ describe('CreatePaymentUseCase 단위 테스트', () => {
         {
           provide: DataSource,
           useValue: mockDataSource,
+        },
+        {
+          provide: LoggerService,
+          useValue: mockLoggerService,
         },
       ],
     }).compile();

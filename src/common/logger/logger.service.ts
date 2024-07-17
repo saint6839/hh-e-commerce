@@ -10,8 +10,15 @@ export class LoggerService extends ConsoleLogger {
     super.warn(message);
   }
 
-  log(message: string) {
-    super.log(message);
+  /**
+   * info 와 동일한 레벨의 로그
+   */
+  log(message: string, context?: string) {
+    if (context) {
+      super.log(message, context);
+    } else {
+      super.log(message);
+    }
   }
 
   debug(message: string) {

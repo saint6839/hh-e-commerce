@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderModule } from 'src/order/order.module';
 import { ProductModule } from 'src/product/product.module';
 import { UserModule } from 'src/user/user.module';
@@ -46,6 +47,7 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
       provide: ICompletePaymentFacadeUseCaseToken,
       useClass: CompletePaymentFacadeUseCase,
     },
+    LoggerService,
   ],
 })
 export class PaymentModule {}

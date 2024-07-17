@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import {
   IOrderRepository,
   IOrderRepositoryToken,
@@ -34,6 +35,7 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
     @Inject(IPaymentGatewayServiceToken)
     private readonly paymentGatewayService: IPaymentGatewayService,
     private readonly dataSource: DataSource,
+    private readonly loggerService: LoggerService,
   ) {}
 
   /**
@@ -57,6 +59,10 @@ export class CompletePaymentUseCase implements ICompletePaymentUseCase {
         paymentEntity,
         orderEntity,
         entityManager,
+      );
+
+      this.loggerService.log(
+        `결제 완료: PaymentID=${updatedPaymentEntity.id}, UserID=${updatedPaymentEntity.userId}, OrderID=${updatedPaymentEntity.orderId}, Amount=${updatedPaymentEntity.amount}, Status=${updatedPaymentEntity.status}`,
       );
 
       return new PaymentResultDto(

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { IUserRepositoryToken } from 'src/user/domain/interface/repository/user.repository.interface';
 import {
   NOT_FOUND_USER_ERROR,
@@ -10,11 +11,16 @@ import { ChargeUserUseCase } from 'src/user/usecase/charge-user.usecase';
 describe('ChargeUserUseCase Unit Test', () => {
   let chargeUserUseCase: ChargeUserUseCase;
   let mockUserRepository: { findById: jest.Mock; update: jest.Mock };
+  let mockLoggerService: any;
 
   beforeEach(async () => {
     mockUserRepository = {
       findById: jest.fn(),
       update: jest.fn(),
+    };
+
+    mockLoggerService = {
+      log: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -23,6 +29,10 @@ describe('ChargeUserUseCase Unit Test', () => {
         {
           provide: IUserRepositoryToken,
           useValue: mockUserRepository,
+        },
+        {
+          provide: LoggerService,
+          useValue: mockLoggerService,
         },
       ],
     }).compile();

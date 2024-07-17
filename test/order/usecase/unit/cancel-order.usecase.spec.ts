@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { Order } from 'src/order/domain/entity/order';
 import { OrderItem } from 'src/order/domain/entity/order-item';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
@@ -16,6 +17,7 @@ describe('CancelOrderUseCase', () => {
   let mockOrderItemRepository: any;
   let mockProductOptionRepository: any;
   let mockDataSource: any;
+  let mockLoggerService: any;
 
   beforeEach(async () => {
     mockOrderRepository = {
@@ -32,6 +34,9 @@ describe('CancelOrderUseCase', () => {
     mockDataSource = {
       transaction: jest.fn((callback) => callback('mockEntityManager')),
     };
+    mockLoggerService = {
+      log: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -46,6 +51,7 @@ describe('CancelOrderUseCase', () => {
           useValue: mockProductOptionRepository,
         },
         { provide: DataSource, useValue: mockDataSource },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
     }).compile();
 

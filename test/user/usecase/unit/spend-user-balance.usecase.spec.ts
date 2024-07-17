@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { IUserRepositoryToken } from 'src/user/domain/interface/repository/user.repository.interface';
 import { NOT_FOUND_USER_ERROR } from 'src/user/infrastructure/entity/user.entity';
 import { SpendBalanceDto } from 'src/user/presentation/dto/request/spend-balance.dto';
@@ -9,6 +10,7 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
   let spendUserBalanceUseCase: SpendUserBalanceUseCase;
   let mockUserRepository: any;
   let mockDataSource: any;
+  let mockLoggerService: any;
 
   beforeEach(async () => {
     mockUserRepository = {
@@ -17,6 +19,10 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
     };
     mockDataSource = {
       transaction: jest.fn((callback) => callback({})),
+    };
+
+    mockLoggerService = {
+      log: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -29,6 +35,10 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
         {
           provide: DataSource,
           useValue: mockDataSource,
+        },
+        {
+          provide: LoggerService,
+          useValue: mockLoggerService,
         },
       ],
     }).compile();
