@@ -63,17 +63,24 @@ jobs:
         run: yarn build
 
       - name: Build Docker image
-        run: docker build -t hh-e-commerce:${{ github.sha }} .
+        run: |
+          docker build \
+            --build-arg DB_HOST=${{ secrets.DB_HOST }} \
+            --build-arg DB_PORT=${{ secrets.DB_PORT }} \
+            --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} \
+            --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --build-arg DB_DATABASE=${{ secrets.DB_DATABASE }} \
+            -t hh-e-commerce:${{ github.sha }} .
 
       - name: Test Docker image
         run: |
           docker run -d --name test-app \
             -e NODE_ENV=production \
-            -e DB_HOST=mysql \
-            -e DB_PORT=3306 \
-            -e DB_USERNAME=testuser \
-            -e DB_PASSWORD=testpassword \
-            -e DB_DATABASE=testdb \
+            -e DB_HOST=${{ secrets.DB_HOST }} \
+            -e DB_PORT=${{ secrets.DB_PORT }} \
+            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e DB_DATABASE=${{ secrets.DB_DATABASE }} \
             --network ${{ job.services.mysql.network }} \
             hh-e-commerce:${{ github.sha }}
           docker ps
