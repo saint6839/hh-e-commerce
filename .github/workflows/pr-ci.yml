@@ -63,6 +63,12 @@ jobs:
 
       - name: Generate test coverage report
         run: yarn test:cov
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3308
+          DB_USERNAME: testuser
+          DB_PASSWORD: testpassword
+          DB_DATABASE: testdb
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
