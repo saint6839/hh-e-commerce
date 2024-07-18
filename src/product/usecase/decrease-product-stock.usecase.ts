@@ -39,10 +39,11 @@ export class DecreaseProductStockUseCase
     const transactionCallback = async (
       transactionEntityManager: EntityManager,
     ) => {
-      const productOptionEntity = await this.productOptionRepository.findById(
-        dto.productOptionId,
-        transactionEntityManager,
-      );
+      const productOptionEntity =
+        await this.productOptionRepository.findByIdWithLock(
+          dto.productOptionId,
+          transactionEntityManager,
+        );
 
       if (!productOptionEntity) {
         throw new Error(
@@ -60,7 +61,7 @@ export class DecreaseProductStockUseCase
         transactionEntityManager,
       );
 
-      const productEntity = await this.productRepository.findById(
+      const productEntity = await this.productRepository.findByIdWithLock(
         productOptionEntity.productId,
         transactionEntityManager,
       );
