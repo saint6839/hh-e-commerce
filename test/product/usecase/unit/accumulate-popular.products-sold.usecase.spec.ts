@@ -69,10 +69,10 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
     );
     expect(
       mockDailyPopularProductRepository.findOneWithLock,
-    ).toHaveBeenCalledWith(10, 1, expect.any(Date), undefined);
+    ).toHaveBeenCalledWith(10, 1, expect.any(Date), expect.any(Object));
     expect(mockDailyPopularProductRepository.save).toHaveBeenCalledWith(
       expect.any(DailyPopularProductEntity),
-      undefined,
+      expect.any(Object),
     );
     expect(mockDataSource.transaction).toHaveBeenCalled();
   });
@@ -112,7 +112,7 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
     expect(mockExistingEntity.accumulateTotalSold).toHaveBeenCalledWith(2);
     expect(mockDailyPopularProductRepository.save).toHaveBeenCalledWith(
       mockExistingEntity,
-      undefined,
+      expect.any(Object),
     );
   });
 
