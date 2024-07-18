@@ -17,6 +17,13 @@ export interface IDailyPopularProductRepository {
     entityManager?: EntityManager,
   ): Promise<DailyPopularProductEntity | null>;
 
+  findOneWithLock(
+    productId: number,
+    productOptionId: number,
+    soldDate: Date,
+    entityManager?: EntityManager,
+  ): Promise<DailyPopularProductEntity | null>;
+
   findTopSoldByDateRange(
     from: Date,
     to: Date,
