@@ -2,15 +2,18 @@ name: CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [cd-test]
 
 env:
   ECR_REGISTRY: 497217256558.dkr.ecr.ap-northeast-1.amazonaws.com
   ECR_REPOSITORY: sy.chae
   IMAGE_TAG: hh-e-commerce:latest
+  ECS_CLUSTER: sychae
+  ECS_SERVICE: sychae-prod
+  ECS_TASK_DEFINITION: aws/taskdef.json
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,5 +38,21 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: sychae-service-prod
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
       - name: Print success message
-        run: echo "Successfully pushed image to ECR. CD pipeline completed."
+        run: echo "Successfully deployed to ECS. CD pipeline completed."
