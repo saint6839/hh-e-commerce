@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   push:
-    branches: [feat/cd-test]
+    branches: [main]
 
 env:
   ECR_REGISTRY: 497217256558.dkr.ecr.ap-northeast-1.amazonaws.com
