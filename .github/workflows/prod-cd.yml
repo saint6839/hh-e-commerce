@@ -8,6 +8,10 @@ env:
   ECR_REGISTRY: 497217256558.dkr.ecr.ap-northeast-1.amazonaws.com
   ECR_REPOSITORY: sy.chae
   IMAGE_TAG: latest
+  ECS_TASK_DEFINITION: aws/taskdef.json
+  ECS_CONTAINER_NAME: sychae-service-prod
+  ECS_CLUSTER: sychae
+  ECS_SERVICE: sychae-prod
 
 jobs:
   build-and-deploy:
