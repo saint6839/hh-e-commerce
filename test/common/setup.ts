@@ -13,7 +13,6 @@ export async function setupTestingModule(): Promise<TestingModule> {
     imports: [
       TypeOrmModule.forRoot({
         type: 'mysql',
-        driver: require('mysql2'),
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '3307', 10),
         username: process.env.DB_USERNAME || 'testuser',
@@ -24,11 +23,10 @@ export async function setupTestingModule(): Promise<TestingModule> {
           __dirname + '/../../dist/**/*.entity{.ts,.js}',
         ],
         synchronize: true,
-        extra: {
-          connectionLimit: 50,
-          queueLimit: 0,
-        },
-        poolSize: 50,
+        dropSchema: true,
+        logging: false,
+        autoLoadEntities: true,
+        driver: require('mysql2'),
       }),
       UserModule,
       ProductModule,

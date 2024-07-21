@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import { IOrderRepositoryToken } from 'src/order/domain/interface/repository/order.repository.interface';
 import { NOT_FOUND_ORDER_ERROR } from 'src/order/repository/entity/order.entity';
@@ -16,6 +17,7 @@ describe('CompletePaymentUseCase', () => {
   let mockOrderRepository: any;
   let mockPaymentGatewayService: any;
   let mockDataSource: any;
+  let mockLoggerService: any;
 
   beforeEach(async () => {
     mockPaymentRepository = {
@@ -32,6 +34,9 @@ describe('CompletePaymentUseCase', () => {
     mockDataSource = {
       transaction: jest.fn((callback) => callback({})),
     };
+    mockLoggerService = {
+      log: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -43,6 +48,7 @@ describe('CompletePaymentUseCase', () => {
           useValue: mockPaymentGatewayService,
         },
         { provide: DataSource, useValue: mockDataSource },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
     }).compile();
 

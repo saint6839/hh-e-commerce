@@ -11,13 +11,14 @@ import { ProductEntity } from 'src/product/infrastructure/entity/product.entity'
 import { DecreaseProductStockDto } from 'src/product/presentation/dto/request/decrease-product-stock.dto';
 import { DecreaseProductStockUseCase } from 'src/product/usecase/decrease-product-stock.usecase';
 import { setupTestingModule } from 'test/common/setup';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 describe('DecreaseProductStockUseCase (통합 테스트)', () => {
   let app: INestApplication;
   let decreaseProductStockUseCase: DecreaseProductStockUseCase;
   let productRepository: Repository<ProductEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
+  let dataSource: DataSource;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -32,6 +33,7 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
     productOptionRepository = moduleFixture.get(
       getRepositoryToken(ProductOptionEntity),
     );
+    dataSource = moduleFixture.get(DataSource);
   });
 
   afterAll(async () => {
@@ -151,5 +153,95 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
       where: { id: productOption.id },
     });
     expect(updatedProductOption?.stock).toBe(7);
+  });
+
+  it('동시에 여러 요청이 들어올 때 재고를 정확하게 감소시키는지 테스트', async () => {
+    // given
+    const product = await productRepository.save({
+      name: '동시성 테스트 상품',
+      status: ProductStatus.ACTIVATE,
+    });
+
+    const initialStock = 100;
+    const productOption = await productOptionRepository.save({
+      name: '동시성 테스트 옵션',
+      price: 1000,
+      stock: initialStock,
+      productId: product.id,
+    });
+
+    const decreaseAmount = 10;
+    const concurrentRequests = 5;
+
+    // when
+    const decreasePromises = Array(concurrentRequests)
+      .fill(null)
+      .map(() =>
+        decreaseProductStockUseCase.execute({
+          productOptionId: productOption.id,
+          quantity: decreaseAmount,
+        }),
+      );
+
+    await Promise.all(decreasePromises);
+
+    // then
+    const updatedProductOption = await productOptionRepository.findOne({
+      where: { id: productOption.id },
+    });
+
+    expect(updatedProductOption).toBeDefined();
+    expect(updatedProductOption?.stock).toBe(
+      initialStock - decreaseAmount * concurrentRequests,
+    );
+  });
+
+  it('동시 요청 중 재고 부족 상황 처리 테스트', async () => {
+    // given
+    const product = await productRepository.save({
+      name: '재고 부족 테스트 상품',
+      status: ProductStatus.ACTIVATE,
+    });
+
+    const initialStock = 25;
+    const productOption = await productOptionRepository.save({
+      name: '재고 부족 테스트 옵션',
+      price: 1000,
+      stock: initialStock,
+      productId: product.id,
+    });
+
+    const decreaseAmount = 10;
+    const concurrentRequests = 3; // 총 30개 감소 시도 (25개 재고)
+
+    // when
+    const decreasePromises = Array(concurrentRequests)
+      .fill(null)
+      .map(() =>
+        decreaseProductStockUseCase.execute({
+          productOptionId: productOption.id,
+          quantity: decreaseAmount,
+        }),
+      );
+
+    const results = await Promise.allSettled(decreasePromises);
+
+    // then
+    const successfulRequests = results.filter(
+      (r) => r.status === 'fulfilled',
+    ).length;
+    const failedRequests = results.filter(
+      (r) => r.status === 'rejected',
+    ).length;
+
+    expect(successfulRequests).toBe(2); // 2개 요청 성공 (20개 감소)
+    expect(failedRequests).toBe(1); // 1개 요청 실패 (재고 부족)
+
+    const updatedProductOption = await productOptionRepository.findOne({
+      where: { id: productOption.id },
+    });
+
+    expect(updatedProductOption).toBeDefined();
+    expect(updatedProductOption?.stock).toBe(5); // 25 - (10 * 2) = 5
   });
 });

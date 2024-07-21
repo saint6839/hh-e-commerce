@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LoggerService } from 'src/common/logger/logger.service';
 import {
   ICreatePaymentUseCase,
   ICreatePaymentUseCaseToken,
@@ -27,6 +28,7 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
     private readonly createPaymentUseCase: ICreatePaymentUseCase,
     private eventEmitter: EventEmitter2,
     private dataSource: DataSource,
+    private loggerService: LoggerService,
   ) {}
 
   /**
@@ -58,6 +60,10 @@ export class CreateOrderFacadeUseCase implements ICreateOrderFacadeUseCase {
         new PaymentDto(dto.userId, orderDto.id, orderDto.totalPrice),
       );
       this.eventEmitter.emit('order.created', { orderId: orderDto.id });
+      this.loggerService.log(
+        `주문 생성 완료 : OrderID=${orderDto.id}, UserID=${dto.userId}`,
+        CreateOrderFacadeUseCase.name,
+      );
       return orderDto;
     });
   }

@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { ProductOption } from 'src/product/domain/entity/product-option';
 import {
   IProductOptionRepository,
@@ -29,6 +30,7 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
     @Inject(IProductOptionRepositoryToken)
     private readonly productOptionRepository: IProductOptionRepository,
     private dataSource: DataSource,
+    private loggerService: LoggerService,
   ) {}
 
   /**
@@ -46,6 +48,10 @@ export class CancelOrderUseCase implements ICancelOrderUseCase {
 
       await this.cancelOrder(order, transactionalEntityManager);
       await this.restoreProductOptionStock(order, transactionalEntityManager);
+      this.loggerService.log(
+        `주문 취소 완료 OrderID: ${order.id}`,
+        CancelOrderUseCase.name,
+      );
     });
   }
 

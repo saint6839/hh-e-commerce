@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { PaymentMethod } from 'src/payment/domain/enum/payment-method.enum';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
@@ -33,7 +34,7 @@ export class PaymentEntity {
 
   static of(userId: number, orderId: number, amount: number): PaymentEntity {
     if (amount <= 0) {
-      throw new Error(INVALID_AMOUNT_ERROR);
+      throw new BadRequestException(INVALID_AMOUNT_ERROR);
     }
 
     const payment = new PaymentEntity();

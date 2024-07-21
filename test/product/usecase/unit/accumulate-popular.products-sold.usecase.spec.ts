@@ -16,10 +16,10 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
 
   beforeEach(async () => {
     mockProductOptionRepository = {
-      findById: jest.fn(),
+      findByIdWithLock: jest.fn(),
     };
     mockDailyPopularProductRepository = {
-      findOne: jest.fn(),
+      findOneWithLock: jest.fn(),
       save: jest.fn(),
     };
     mockDataSource = {
@@ -54,28 +54,25 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
       orderItems: [new OrderItemDto(1, 1, 1, 1, 1)],
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue({
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue({
       id: 1,
       productId: 10,
     });
 
-    mockDailyPopularProductRepository.findOne.mockResolvedValue(null);
+    mockDailyPopularProductRepository.findOneWithLock.mockResolvedValue(null);
 
     await useCase.execute(dto);
 
-    expect(mockProductOptionRepository.findById).toHaveBeenCalledWith(
+    expect(mockProductOptionRepository.findByIdWithLock).toHaveBeenCalledWith(
       1,
       expect.any(Object),
     );
-    expect(mockDailyPopularProductRepository.findOne).toHaveBeenCalledWith(
-      10,
-      1,
-      expect.any(Date),
-      undefined,
-    );
+    expect(
+      mockDailyPopularProductRepository.findOneWithLock,
+    ).toHaveBeenCalledWith(10, 1, expect.any(Date), expect.any(Object));
     expect(mockDailyPopularProductRepository.save).toHaveBeenCalledWith(
       expect.any(DailyPopularProductEntity),
-      undefined,
+      expect.any(Object),
     );
     expect(mockDataSource.transaction).toHaveBeenCalled();
   });
@@ -85,7 +82,7 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
       orderItems: [new OrderItemDto(999, 1, 1, 1, 1)],
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue(null);
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(null);
 
     await expect(useCase.execute(dto)).rejects.toThrow(
       NOT_FOUND_PRODUCT_OPTION_ERROR + ': ' + dto.orderItems[0].productOptionId,
@@ -98,7 +95,7 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
       orderItems: [new OrderItemDto(1, 1, 1, 2, 1)],
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue({
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue({
       id: 1,
       productId: 10,
     });
@@ -106,7 +103,7 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
     const mockExistingEntity = {
       accumulateTotalSold: jest.fn(),
     };
-    mockDailyPopularProductRepository.findOne.mockResolvedValue(
+    mockDailyPopularProductRepository.findOneWithLock.mockResolvedValue(
       mockExistingEntity,
     );
 
@@ -115,7 +112,7 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
     expect(mockExistingEntity.accumulateTotalSold).toHaveBeenCalledWith(2);
     expect(mockDailyPopularProductRepository.save).toHaveBeenCalledWith(
       mockExistingEntity,
-      undefined,
+      expect.any(Object),
     );
   });
 
@@ -124,27 +121,24 @@ describe('AccumulatePopularProductsSoldUseCase', () => {
       orderItems: [new OrderItemDto(1, 1, 1, 2, 1)],
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue({
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue({
       id: 1,
       productId: 10,
     });
 
-    mockDailyPopularProductRepository.findOne.mockResolvedValue(null);
+    mockDailyPopularProductRepository.findOneWithLock.mockResolvedValue(null);
 
     const existingEntityManager = {} as EntityManager;
     await useCase.execute(dto, existingEntityManager);
 
     expect(mockDataSource.transaction).not.toHaveBeenCalled();
-    expect(mockProductOptionRepository.findById).toHaveBeenCalledWith(
+    expect(mockProductOptionRepository.findByIdWithLock).toHaveBeenCalledWith(
       1,
       existingEntityManager,
     );
-    expect(mockDailyPopularProductRepository.findOne).toHaveBeenCalledWith(
-      10,
-      1,
-      expect.any(Date),
-      existingEntityManager,
-    );
+    expect(
+      mockDailyPopularProductRepository.findOneWithLock,
+    ).toHaveBeenCalledWith(10, 1, expect.any(Date), existingEntityManager);
     expect(mockDailyPopularProductRepository.save).toHaveBeenCalledWith(
       expect.any(DailyPopularProductEntity),
       existingEntityManager,

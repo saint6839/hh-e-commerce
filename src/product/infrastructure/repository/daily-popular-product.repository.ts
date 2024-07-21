@@ -17,6 +17,26 @@ export class DailyPopularProductRepository
     super(dailyPopularProductRepository);
   }
 
+  async findOneWithLock(
+    productId: number,
+    productOptionId: number,
+    soldDate: Date,
+    entityManager?: EntityManager,
+  ): Promise<DailyPopularProductEntity | null> {
+    return this.executeQuery(
+      (repo) =>
+        repo.findOne({
+          where: {
+            productId,
+            productOptionId,
+            soldDate,
+          },
+          lock: { mode: 'pessimistic_write' },
+        }),
+      entityManager,
+    );
+  }
+
   async findOne(
     productId: number,
     productOptionId: number,

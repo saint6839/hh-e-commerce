@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { PaymentModule } from 'src/payment/payment.module';
 import { ProductModule } from 'src/product/product.module';
 import { IOrderItemRepositoryToken } from './domain/interface/repository/order-item.repository.interface';
@@ -48,6 +49,7 @@ import { CreateOrderUseCase } from './usecase/create-order.usecase';
       provide: ICreateOrderUseCaseToken,
       useClass: CreateOrderUseCase,
     },
+    LoggerService,
     OrderEventListener,
   ],
 })

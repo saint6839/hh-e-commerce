@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { DataSource, EntityManager } from 'typeorm';
 import {
   IPaymentRepository,
@@ -15,6 +16,7 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
     @Inject(IPaymentRepositoryToken)
     private readonly paymentRepository: IPaymentRepository,
     private readonly dataSource: DataSource,
+    private readonly loggerService: LoggerService,
   ) {}
 
   /**
@@ -29,6 +31,11 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
       const paymentEntity = await this.paymentRepository.create(
         PaymentEntity.of(dto.userId, dto.orderId, dto.amount),
         entityManager,
+      );
+
+      this.loggerService.log(
+        `결제 요청 생성 완료 : PaymentID=${paymentEntity.id}, UserID=${paymentEntity.userId}, OrderID=${paymentEntity.orderId}, Amount=${paymentEntity.amount}`,
+        CreatePaymentUseCase.name,
       );
 
       return new PaymentResultDto(

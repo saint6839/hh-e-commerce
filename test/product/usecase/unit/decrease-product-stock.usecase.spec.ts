@@ -24,10 +24,10 @@ describe('DecreaseProductStockUseCase', () => {
 
   beforeEach(async () => {
     mockProductRepository = {
-      findById: jest.fn(),
+      findByIdWithLock: jest.fn(),
     } as any;
     mockProductOptionRepository = {
-      findById: jest.fn(),
+      findByIdWithLock: jest.fn(),
       updateStock: jest.fn(),
     } as any;
     mockEntityManager = {
@@ -71,15 +71,15 @@ describe('DecreaseProductStockUseCase', () => {
       status: ProductStatus.ACTIVATE,
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue(
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(
       mockProductOptionEntity,
     );
-    mockProductRepository.findById.mockResolvedValue(mockProductEntity);
+    mockProductRepository.findByIdWithLock.mockResolvedValue(mockProductEntity);
 
     const result = await useCase.execute(dto);
 
     expect(mockDataSource.transaction).toHaveBeenCalled();
-    expect(mockProductOptionRepository.findById).toHaveBeenCalledWith(
+    expect(mockProductOptionRepository.findByIdWithLock).toHaveBeenCalledWith(
       1,
       mockEntityManager,
     );
@@ -88,7 +88,7 @@ describe('DecreaseProductStockUseCase', () => {
       8,
       mockEntityManager,
     );
-    expect(mockProductRepository.findById).toHaveBeenCalledWith(
+    expect(mockProductRepository.findByIdWithLock).toHaveBeenCalledWith(
       1,
       mockEntityManager,
     );
@@ -101,7 +101,7 @@ describe('DecreaseProductStockUseCase', () => {
 
   it('존재하지 않는 상품 옵션에 대해 예외를 발생시키는지 테스트', async () => {
     const dto: DecreaseProductStockDto = { productOptionId: 999, quantity: 1 };
-    mockProductOptionRepository.findById.mockResolvedValue(null);
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(null);
 
     await expect(useCase.execute(dto)).rejects.toThrow(
       NOT_FOUND_PRODUCT_OPTION_ERROR + ': 999',
@@ -119,10 +119,10 @@ describe('DecreaseProductStockUseCase', () => {
       productId: 999,
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue(
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(
       mockProductOptionEntity,
     );
-    mockProductRepository.findById.mockResolvedValue(null);
+    mockProductRepository.findByIdWithLock.mockResolvedValue(null);
 
     await expect(useCase.execute(dto)).rejects.toThrow(
       NOT_FOUND_PRODUCT_ERROR + ': 999',
@@ -145,16 +145,16 @@ describe('DecreaseProductStockUseCase', () => {
       status: ProductStatus.ACTIVATE,
     };
 
-    mockProductOptionRepository.findById.mockResolvedValue(
+    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(
       mockProductOptionEntity,
     );
-    mockProductRepository.findById.mockResolvedValue(mockProductEntity);
+    mockProductRepository.findByIdWithLock.mockResolvedValue(mockProductEntity);
 
     const existingEntityManager = {} as EntityManager;
     await useCase.execute(dto, existingEntityManager);
 
     expect(mockDataSource.transaction).not.toHaveBeenCalled();
-    expect(mockProductOptionRepository.findById).toHaveBeenCalledWith(
+    expect(mockProductOptionRepository.findByIdWithLock).toHaveBeenCalledWith(
       1,
       existingEntityManager,
     );
@@ -163,7 +163,7 @@ describe('DecreaseProductStockUseCase', () => {
       8,
       existingEntityManager,
     );
-    expect(mockProductRepository.findById).toHaveBeenCalledWith(
+    expect(mockProductRepository.findByIdWithLock).toHaveBeenCalledWith(
       1,
       existingEntityManager,
     );

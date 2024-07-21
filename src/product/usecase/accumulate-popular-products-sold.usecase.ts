@@ -40,10 +40,11 @@ export class AccumulatePopularProductsSoldUseCase
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       for (const orderItem of dto.orderItems) {
-        const productOptionEntity = await this.productOptionRepository.findById(
-          orderItem.productOptionId,
-          transactionalEntityManager,
-        );
+        const productOptionEntity =
+          await this.productOptionRepository.findByIdWithLock(
+            orderItem.productOptionId,
+            transactionalEntityManager,
+          );
 
         if (!productOptionEntity) {
           throw new Error(
@@ -52,11 +53,11 @@ export class AccumulatePopularProductsSoldUseCase
         }
 
         const existingDailyPopularProductEntity =
-          await this.dailyPopularProductRepository.findOne(
+          await this.dailyPopularProductRepository.findOneWithLock(
             productOptionEntity.productId,
             productOptionEntity.id,
             today,
-            entityManager,
+            transactionalEntityManager,
           );
 
         if (existingDailyPopularProductEntity) {
@@ -65,7 +66,7 @@ export class AccumulatePopularProductsSoldUseCase
           );
           await this.dailyPopularProductRepository.save(
             existingDailyPopularProductEntity,
-            entityManager,
+            transactionalEntityManager,
           );
         } else {
           const newDailyPopularProductEntity = DailyPopularProductEntity.of(
@@ -76,19 +77,16 @@ export class AccumulatePopularProductsSoldUseCase
           );
           await this.dailyPopularProductRepository.save(
             newDailyPopularProductEntity,
-            entityManager,
+            transactionalEntityManager,
           );
         }
       }
     };
 
     if (entityManager) {
-      await transactionCallback(entityManager);
-      return;
+      return await transactionCallback(entityManager);
+    } else {
+      return await this.dataSource.transaction(transactionCallback);
     }
-
-    await this.dataSource.transaction(async (transactionalEntityManager) => {
-      await transactionCallback(transactionalEntityManager);
-    });
   }
 }

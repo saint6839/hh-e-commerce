@@ -186,9 +186,16 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       status: OrderStatus.PENDING_PAYMENT,
     });
 
-    const product = await await orderItemRepository.save({
+    const productOption = await productOptionRepository.save({
+      name: '테스트 옵션',
+      price: 1000,
+      stock: 10,
+      productId: 1,
+    });
+
+    const orderItem = await await orderItemRepository.save({
       orderId: order.id,
-      productOptionId: 1,
+      productOptionId: productOption.id,
       productName: '테스트 상품',
       quantity: 2,
       totalPriceAtOrder: 5000,
