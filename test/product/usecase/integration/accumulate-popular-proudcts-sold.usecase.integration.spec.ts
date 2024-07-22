@@ -149,4 +149,58 @@ describe('AccumulatePopularProductsSoldUseCase (통합 테스트)', () => {
     expect(updatedDailyPopularProduct).toBeDefined();
     expect(updatedDailyPopularProduct?.totalSold).toBe(15);
   });
+
+  it('동시에 여러 요청이 들어올 때 판매량이 정확하게 누적되는지 테스트', async () => {
+    // given
+    const product = await productRepository.save({
+      name: '테스트 상품',
+      status: ProductStatus.ACTIVATE,
+    });
+
+    const productOption = await productOptionRepository.save({
+      name: '테스트 옵션',
+      price: 1000,
+      stock: 100,
+      productId: product.id,
+    });
+
+    const dto: AccumulatePopularProductsSoldDto = {
+      orderItems: [new OrderItemDto(1, 1, productOption.id, 5, 1000)],
+    };
+
+    const concurrentRequests = 5; // 동시 요청 수
+
+    // when
+    const accumulatePromises = Array(concurrentRequests)
+      .fill(null)
+      .map(() => accumulatePopularProductsSoldUseCase.execute(dto));
+
+    const results = await Promise.allSettled(accumulatePromises);
+
+    // then
+    const successfulRequests = results.filter(
+      (r) => r.status === 'fulfilled',
+    ).length;
+    const failedRequests = results.filter(
+      (r) => r.status === 'rejected',
+    ).length;
+
+    expect(successfulRequests).toBe(concurrentRequests); // 모든 요청이 성공해야 함
+    expect(failedRequests).toBe(0); // 실패한 요청이 없어야 함
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const updatedDailyPopularProduct =
+      await dailyPopularProductRepository.findOne({
+        where: {
+          productId: product.id,
+          productOptionId: productOption.id,
+          soldDate: today,
+        },
+      });
+
+    expect(updatedDailyPopularProduct).toBeDefined();
+    expect(updatedDailyPopularProduct?.totalSold).toBe(5 * concurrentRequests); // 총 판매량이 정확하게 누적되었는지 확인
+  });
 });
