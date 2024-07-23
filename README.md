@@ -185,6 +185,14 @@ erDiagram
     datetime deletedAt
   }
 
+  product_options {
+    long id
+    varchar name
+    long price
+    int stock
+    long productId
+  }
+
   orders {
     long id
     long userId
@@ -236,7 +244,7 @@ erDiagram
   users ||--o{ orders : "has"
   orders ||--o{ order_items : "contains"
   products ||--o{ order_items : "is in"
-
-  products ||--o{ daily_popular_products : "is"
+  products ||--o{ product_options: "contains"
+  product_options ||--o{ daily_popular_products : "is"
   orders ||--|| payments : "has"
 ```
