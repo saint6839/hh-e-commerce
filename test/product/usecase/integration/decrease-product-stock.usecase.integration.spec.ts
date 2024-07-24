@@ -177,7 +177,7 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
     });
 
     const decreaseAmount = 1;
-    const concurrentRequests = 5;
+    const concurrentRequests = 1000;
 
     // when
     const decreasePromises = Array(concurrentRequests)
