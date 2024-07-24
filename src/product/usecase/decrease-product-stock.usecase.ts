@@ -132,7 +132,7 @@ export class DecreaseProductStockUseCase
     } finally {
       if (lock) {
         try {
-          await this.redisLockService.releaseLock(lock);
+          await this.redisLockService.releaseLock(lockResource, lock);
         } catch (releaseError) {
           console.error(`Error releasing lock: ${releaseError.message}`);
         }

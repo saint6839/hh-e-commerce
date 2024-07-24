@@ -9,8 +9,13 @@ services:
       MYSQL_PASSWORD: testpassword
     ports:
       - '3307:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
   test-redis:
     image: redis:6.2-alpine
     ports:
       - '6389:6379'
     command: redis-server --appendonly yes
+
+volumes:
+  mysql-data:

@@ -1,12 +1,13 @@
 import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
-import Redlock, { ExecutionError } from 'redlock';
 import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class RedisLockService implements OnModuleDestroy {
-  private readonly redlock: Redlock;
-
+  private readonly subscriber: Redis;
+  private readonly publisher: Redis;
+  private subscriptions: Map<string, { count: number; resolver: any[] }> =
+    new Map();
   constructor(
     private readonly logger: LoggerService,
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
@@ -18,50 +19,78 @@ export class RedisLockService implements OnModuleDestroy {
         port: 6379,
         retryStrategy: (times) => Math.min(times * 50, 2000),
       });
+    this.subscriber = this.redisClient.duplicate();
+    this.publisher = this.redisClient.duplicate();
 
-    // Redlock 인스턴스 생성
-    this.redlock = new Redlock([this.redisClient], {
-      retryCount: 25,
-      retryDelay: 400,
-      retryJitter: 50,
-      automaticExtensionThreshold: 500,
-    });
-
-    // Redlock의 clientError 이벤트 핸들러
-    this.redlock.on('clientError', (err) => {
-      this.logger.error('A redis error has occurred:', err);
-    });
+    this.subscriber.on('message', this.handleMessage.bind(this));
   }
 
   async onModuleDestroy() {
     this.redisClient.disconnect();
-    this.redlock.quit();
+    this.subscriber.disconnect();
+    this.publisher.disconnect();
   }
 
-  // 락 획득 메서드
-  async acquireLock(resource: string, ttl: number): Promise<any> {
-    try {
-      const lock = await this.redlock.acquire([resource], ttl);
-      this.logger.log(`Lock acquired: ${resource}`);
-      return lock;
-    } catch (err) {
-      if (err instanceof ExecutionError) {
-        this.logger.warn(`Resource is locked: ${resource}`);
-      } else {
-        this.logger.error(`Failed to acquire lock: ${resource}`, err);
+  private handleMessage(channel: string, message: string) {
+    if (message === 'release') {
+      const subscription = this.subscriptions.get(channel);
+      if (subscription) {
+        const resolver = subscription.resolver.shift();
+        if (resolver) {
+          resolver();
+        }
+        subscription.count--;
+        if (subscription.count === 0) {
+          this.subscriber.unsubscribe(channel);
+          this.subscriptions.delete(channel);
+        }
       }
-      throw err;
     }
   }
 
-  // 락 해제 메서드
-  async releaseLock(lock: any): Promise<void> {
-    try {
-      await lock.release();
-      this.logger.log(`Lock released: ${lock.resources}`);
-    } catch (err) {
-      this.logger.error(`Failed to release lock: ${lock.resources}`, err);
-      throw err;
+  async acquireLock(resource: string, ttl: number): Promise<string> {
+    const lockValue = Date.now().toString();
+    const channel = `lock:${resource}`;
+
+    const acquired = await this.redisClient.set(
+      resource,
+      lockValue,
+      'PX',
+      ttl,
+      'NX',
+    );
+    if (acquired === 'OK') {
+      this.logger.log(`Lock acquired: ${resource}`);
+      return lockValue;
+    }
+
+    return new Promise((resolve) => {
+      if (!this.subscriptions.has(channel)) {
+        this.subscriber.subscribe(channel);
+        this.subscriptions.set(channel, { count: 1, resolver: [resolve] });
+      } else {
+        const subscription = this.subscriptions.get(channel)!;
+        subscription.count++;
+        subscription.resolver.push(resolve);
+      }
+    }).then(() => this.acquireLock(resource, ttl));
+  }
+
+  async releaseLock(resource: string, value: string): Promise<void> {
+    const script = `
+      if redis.call("get", KEYS[1]) == ARGV[1] then
+        return redis.call("del", KEYS[1])
+      else
+        return 0
+      end
+    `;
+
+    const result = await this.redisClient.eval(script, 1, resource, value);
+    if (result === 1) {
+      this.logger.log(`Lock released: ${resource}`);
+      await this.publisher.publish(`lock:${resource}`, 'release');
+    } else {
+      this.logger.warn(`Failed to release lock: ${resource}`);
     }
   }
 }
