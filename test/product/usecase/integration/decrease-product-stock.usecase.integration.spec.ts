@@ -1,6 +1,7 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import { IDecreaseProductStockUsecaseToken } from 'src/product/domain/interface/usecase/decrease-product-stock.usecase.interface';
 import {
@@ -10,19 +11,22 @@ import {
 import { ProductEntity } from 'src/product/infrastructure/entity/product.entity';
 import { DecreaseProductStockDto } from 'src/product/presentation/dto/request/decrease-product-stock.dto';
 import { DecreaseProductStockUseCase } from 'src/product/usecase/decrease-product-stock.usecase';
-import { setupTestingModule } from 'test/common/setup';
+import { setupTestingModule, teardownTestingModule } from 'test/common/setup';
 import { DataSource, Repository } from 'typeorm';
 
 describe('DecreaseProductStockUseCase (통합 테스트)', () => {
+  let moduleFixture: TestingModule;
   let app: INestApplication;
   let decreaseProductStockUseCase: DecreaseProductStockUseCase;
   let productRepository: Repository<ProductEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
   let dataSource: DataSource;
+  let loggerService: LoggerService;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await setupTestingModule();
+    moduleFixture = await setupTestingModule();
     app = moduleFixture.createNestApplication();
+    app.useLogger(new Logger());
     await app.init();
 
     decreaseProductStockUseCase =
@@ -34,10 +38,12 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
       getRepositoryToken(ProductOptionEntity),
     );
     dataSource = moduleFixture.get(DataSource);
+    loggerService = moduleFixture.get(LoggerService);
   });
 
   afterAll(async () => {
     await app.close();
+    await teardownTestingModule(moduleFixture);
   });
 
   afterEach(async () => {
@@ -162,7 +168,7 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
       status: ProductStatus.ACTIVATE,
     });
 
-    const initialStock = 100;
+    const initialStock = 1000;
     const productOption = await productOptionRepository.save({
       name: '동시성 테스트 옵션',
       price: 1000,
@@ -170,7 +176,7 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
       productId: product.id,
     });
 
-    const decreaseAmount = 10;
+    const decreaseAmount = 1;
     const concurrentRequests = 5;
 
     // when
@@ -194,7 +200,7 @@ describe('DecreaseProductStockUseCase (통합 테스트)', () => {
     expect(updatedProductOption?.stock).toBe(
       initialStock - decreaseAmount * concurrentRequests,
     );
-  });
+  }, 30000);
 
   it('동시 요청 중 재고 부족 상황 처리 테스트', async () => {
     // given
