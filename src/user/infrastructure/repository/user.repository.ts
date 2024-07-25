@@ -36,4 +36,28 @@ export class UserRepository
       return repo.findOneOrFail({ where: { id: partialEntity.id } });
     }, entityManager);
   }
+
+  async updateOptimistic(
+    partialEntity: Partial<UserEntity> & { id: number; version: number },
+    entityManager?: EntityManager,
+  ): Promise<UserEntity> {
+    return this.executeQuery(async (repo) => {
+      const result = await repo
+        .createQueryBuilder()
+        .update(UserEntity)
+        .set({ ...partialEntity, version: () => 'version + 1' })
+        .where('id = :id AND version = :version', {
+          id: partialEntity.id,
+          version: partialEntity.version,
+        })
+        .execute();
+
+      if (result.affected === 0) {
+        throw new Error(
+          '동시성 오류: 다른 트랜잭션에 의해 데이터가 변경되었습니다.',
+        );
+      }
+      return repo.findOneOrFail({ where: { id: partialEntity.id } });
+    }, entityManager);
+  }
 }

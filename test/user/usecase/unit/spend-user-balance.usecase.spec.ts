@@ -16,6 +16,7 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
     mockUserRepository = {
       findById: jest.fn(),
       update: jest.fn(),
+      updateOptimistic: jest.fn(),
     };
     mockDataSource = {
       transaction: jest.fn((callback) => callback({})),
@@ -57,7 +58,7 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
     const spendBalanceDto: SpendBalanceDto = { userId: 1, amount: 3000 };
 
     mockUserRepository.findById.mockResolvedValue(mockUserEntity);
-    mockUserRepository.update.mockResolvedValue({
+    mockUserRepository.updateOptimistic.mockResolvedValue({
       ...mockUserEntity,
       balance: 7000,
     });
@@ -107,7 +108,7 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
     const mockEntityManager = {} as EntityManager;
 
     mockUserRepository.findById.mockResolvedValue(mockUserEntity);
-    mockUserRepository.update.mockResolvedValue({
+    mockUserRepository.updateOptimistic.mockResolvedValue({
       ...mockUserEntity,
       balance: 7000,
     });
@@ -119,7 +120,7 @@ describe('SpendUserBalanceUseCase Unit Test', () => {
       1,
       mockEntityManager,
     );
-    expect(mockUserRepository.update).toHaveBeenCalledWith(
+    expect(mockUserRepository.updateOptimistic).toHaveBeenCalledWith(
       expect.any(Object),
       mockEntityManager,
     );

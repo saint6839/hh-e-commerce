@@ -13,4 +13,9 @@ export interface IUserRepository {
     partialEntity: Partial<UserEntity> & { id: number },
     entityManager?: EntityManager,
   ): Promise<UserEntity>;
+
+  updateOptimistic(
+    partialEntity: Partial<UserEntity> & { id: number; version: number },
+    entityManager?: EntityManager,
+  ): Promise<UserEntity>;
 }

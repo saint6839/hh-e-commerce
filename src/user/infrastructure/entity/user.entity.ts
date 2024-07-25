@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, VersionColumn } from 'typeorm';
 
 export const NOT_FOUND_USER_ERROR = '존재하지 않는 사용자입니다.';
 
@@ -15,4 +15,7 @@ export class UserEntity {
 
   @Column({ type: 'timestamp', nullable: true, default: null })
   deletedAt: Date | null;
+
+  @VersionColumn()
+  version: number;
 }

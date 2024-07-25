@@ -35,6 +35,7 @@ describe('ReadUserUseCase Unit Test', () => {
       name: '테스트 사용자',
       balance: 1000,
       deletedAt: null,
+      version: 1,
     };
 
     mockUserRepository.findById.mockResolvedValue(mockUserEntity);
