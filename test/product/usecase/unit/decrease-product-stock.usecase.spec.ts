@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
+import { RedisLockService } from 'src/common/redis/redis-lock.service';
 import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import {
   IProductOptionRepository,
@@ -21,13 +23,18 @@ describe('DecreaseProductStockUseCase', () => {
   let mockProductOptionRepository: jest.Mocked<IProductOptionRepository>;
   let mockDataSource: jest.Mocked<DataSource>;
   let mockEntityManager: jest.Mocked<EntityManager>;
+  let mockRedisLockService: jest.Mocked<RedisLockService>;
+  let mockLoggerService: jest.Mocked<LoggerService>;
 
   beforeEach(async () => {
     mockProductRepository = {
       findByIdWithLock: jest.fn(),
+      findById: jest.fn(),
     } as any;
+
     mockProductOptionRepository = {
       findByIdWithLock: jest.fn(),
+      findById: jest.fn(),
       updateStock: jest.fn(),
     } as any;
     mockEntityManager = {
@@ -35,6 +42,15 @@ describe('DecreaseProductStockUseCase', () => {
       commit: jest.fn(),
       rollback: jest.fn(),
     } as any;
+    mockRedisLockService = {
+      acquireLock: jest.fn(),
+      releaseLock: jest.fn(),
+    } as any;
+    mockLoggerService = {
+      log: jest.fn(),
+      error: jest.fn(),
+    } as any;
+
     mockDataSource = {
       transaction: jest.fn((cb) => cb(mockEntityManager)),
     } as any;
@@ -48,6 +64,8 @@ describe('DecreaseProductStockUseCase', () => {
           useValue: mockProductOptionRepository,
         },
         { provide: DataSource, useValue: mockDataSource },
+        { provide: RedisLockService, useValue: mockRedisLockService },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
     }).compile();
 
@@ -71,15 +89,15 @@ describe('DecreaseProductStockUseCase', () => {
       status: ProductStatus.ACTIVATE,
     };
 
-    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(
+    mockProductOptionRepository.findById.mockResolvedValue(
       mockProductOptionEntity,
     );
-    mockProductRepository.findByIdWithLock.mockResolvedValue(mockProductEntity);
+    mockProductRepository.findById.mockResolvedValue(mockProductEntity);
 
     const result = await useCase.execute(dto);
 
     expect(mockDataSource.transaction).toHaveBeenCalled();
-    expect(mockProductOptionRepository.findByIdWithLock).toHaveBeenCalledWith(
+    expect(mockProductOptionRepository.findById).toHaveBeenCalledWith(
       1,
       mockEntityManager,
     );
@@ -88,7 +106,7 @@ describe('DecreaseProductStockUseCase', () => {
       8,
       mockEntityManager,
     );
-    expect(mockProductRepository.findByIdWithLock).toHaveBeenCalledWith(
+    expect(mockProductRepository.findById).toHaveBeenCalledWith(
       1,
       mockEntityManager,
     );
@@ -101,7 +119,7 @@ describe('DecreaseProductStockUseCase', () => {
 
   it('존재하지 않는 상품 옵션에 대해 예외를 발생시키는지 테스트', async () => {
     const dto: DecreaseProductStockDto = { productOptionId: 999, quantity: 1 };
-    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(null);
+    mockProductOptionRepository.findById.mockResolvedValue(null);
 
     await expect(useCase.execute(dto)).rejects.toThrow(
       NOT_FOUND_PRODUCT_OPTION_ERROR + ': 999',
@@ -119,10 +137,10 @@ describe('DecreaseProductStockUseCase', () => {
       productId: 999,
     };
 
-    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(
+    mockProductOptionRepository.findById.mockResolvedValue(
       mockProductOptionEntity,
     );
-    mockProductRepository.findByIdWithLock.mockResolvedValue(null);
+    mockProductRepository.findById.mockResolvedValue(null);
 
     await expect(useCase.execute(dto)).rejects.toThrow(
       NOT_FOUND_PRODUCT_ERROR + ': 999',
@@ -145,16 +163,16 @@ describe('DecreaseProductStockUseCase', () => {
       status: ProductStatus.ACTIVATE,
     };
 
-    mockProductOptionRepository.findByIdWithLock.mockResolvedValue(
+    mockProductOptionRepository.findById.mockResolvedValue(
       mockProductOptionEntity,
     );
-    mockProductRepository.findByIdWithLock.mockResolvedValue(mockProductEntity);
+    mockProductRepository.findById.mockResolvedValue(mockProductEntity);
 
     const existingEntityManager = {} as EntityManager;
     await useCase.execute(dto, existingEntityManager);
 
     expect(mockDataSource.transaction).not.toHaveBeenCalled();
-    expect(mockProductOptionRepository.findByIdWithLock).toHaveBeenCalledWith(
+    expect(mockProductOptionRepository.findById).toHaveBeenCalledWith(
       1,
       existingEntityManager,
     );
@@ -163,7 +181,7 @@ describe('DecreaseProductStockUseCase', () => {
       8,
       existingEntityManager,
     );
-    expect(mockProductRepository.findByIdWithLock).toHaveBeenCalledWith(
+    expect(mockProductRepository.findById).toHaveBeenCalledWith(
       1,
       existingEntityManager,
     );

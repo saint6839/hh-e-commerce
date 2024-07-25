@@ -40,27 +40,18 @@ export class DecreaseProductStockUseCase
     dto: DecreaseProductStockDto,
     entityManager?: EntityManager,
   ): Promise<ProductDto> {
-    const startTime = Date.now();
-    this.logger.log(`DTO 생성 시간: ${Date.now() - startTime}ms`);
-
     const lockResource = `product_option:${dto.productOptionId}`;
     let lock;
 
     try {
       lock = await this.redisLockService.acquireLock(lockResource, 1000);
-      this.logger.log(`락 획득 시간: ${Date.now() - startTime}ms`);
 
       const transactionCallback = async (
         transactionEntityManager: EntityManager,
       ) => {
-        const transactionStartTime = Date.now();
-
         const productOptionEntity = await this.productOptionRepository.findById(
           dto.productOptionId,
           transactionEntityManager,
-        );
-        this.logger.log(
-          `상품 옵션 조회 시간: ${Date.now() - transactionStartTime}ms`,
         );
 
         if (!productOptionEntity) {
@@ -71,20 +62,12 @@ export class DecreaseProductStockUseCase
 
         const productOption: ProductOption =
           ProductOption.fromEntity(productOptionEntity);
-        const decreaseStockStartTime = Date.now();
         productOption.decreaseStock(dto.quantity);
-        this.logger.log(
-          `재고 감소 처리 시간: ${Date.now() - decreaseStockStartTime}ms`,
-        );
 
-        const updateStockStartTime = Date.now();
         await this.productOptionRepository.updateStock(
           dto.productOptionId,
           productOption.stock,
           transactionEntityManager,
-        );
-        this.logger.log(
-          `재고 업데이트 시간: ${Date.now() - updateStockStartTime}ms`,
         );
 
         const productEntity = await this.productRepository.findById(
@@ -97,10 +80,6 @@ export class DecreaseProductStockUseCase
             NOT_FOUND_PRODUCT_ERROR + ': ' + productOptionEntity.productId,
           );
         }
-
-        this.logger.log(
-          `트랜잭션 총 처리 시간: ${Date.now() - transactionStartTime}ms`,
-        );
 
         return new ProductDto(
           productEntity.id,
@@ -127,17 +106,11 @@ export class DecreaseProductStockUseCase
 
       return result;
     } catch (error) {
-      console.error(`Error in DecreaseProductStockUseCase: ${error.message}`);
       throw error;
     } finally {
       if (lock) {
-        try {
-          await this.redisLockService.releaseLock(lockResource, lock);
-        } catch (releaseError) {
-          console.error(`Error releasing lock: ${releaseError.message}`);
-        }
+        await this.redisLockService.releaseLock(lockResource, lock);
       }
-      this.logger.log(`전체 처리 시간: ${Date.now() - startTime}ms`);
     }
   }
 }
