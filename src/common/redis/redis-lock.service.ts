@@ -60,7 +60,6 @@ export class RedisLockService implements OnModuleDestroy {
       'NX',
     );
     if (acquired === 'OK') {
-      this.logger.log(`Lock acquired: ${resource}`);
       return lockValue;
     }
 
@@ -87,10 +86,7 @@ export class RedisLockService implements OnModuleDestroy {
 
     const result = await this.redisClient.eval(script, 1, resource, value);
     if (result === 1) {
-      this.logger.log(`Lock released: ${resource}`);
       await this.publisher.publish(`lock:${resource}`, 'release');
-    } else {
-      this.logger.warn(`Failed to release lock: ${resource}`);
     }
   }
 }
