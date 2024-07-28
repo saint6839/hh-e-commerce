@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
 import { DataSource, EntityManager } from 'typeorm';
+import { RedisLockService } from '../../common/redis/redis-lock.service';
 import { ProductOption } from '../domain/entity/product-option';
 import {
   IProductOptionRepository,
@@ -26,6 +28,8 @@ export class DecreaseProductStockUseCase
     @Inject(IProductOptionRepositoryToken)
     private readonly productOptionRepository: IProductOptionRepository,
     private readonly dataSource: DataSource,
+    private readonly redisLockService: RedisLockService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -36,64 +40,77 @@ export class DecreaseProductStockUseCase
     dto: DecreaseProductStockDto,
     entityManager?: EntityManager,
   ): Promise<ProductDto> {
-    const transactionCallback = async (
-      transactionEntityManager: EntityManager,
-    ) => {
-      const productOptionEntity =
-        await this.productOptionRepository.findByIdWithLock(
+    const lockResource = `product_option:${dto.productOptionId}`;
+    let lock;
+
+    try {
+      lock = await this.redisLockService.acquireLock(lockResource, 1000);
+
+      const transactionCallback = async (
+        transactionEntityManager: EntityManager,
+      ) => {
+        const productOptionEntity = await this.productOptionRepository.findById(
           dto.productOptionId,
           transactionEntityManager,
         );
 
-      if (!productOptionEntity) {
-        throw new Error(
-          NOT_FOUND_PRODUCT_OPTION_ERROR + ': ' + dto.productOptionId,
+        if (!productOptionEntity) {
+          throw new Error(
+            NOT_FOUND_PRODUCT_OPTION_ERROR + ': ' + dto.productOptionId,
+          );
+        }
+
+        const productOption: ProductOption =
+          ProductOption.fromEntity(productOptionEntity);
+        productOption.decreaseStock(dto.quantity);
+
+        await this.productOptionRepository.updateStock(
+          dto.productOptionId,
+          productOption.stock,
+          transactionEntityManager,
         );
+
+        const productEntity = await this.productRepository.findById(
+          productOptionEntity.productId,
+          transactionEntityManager,
+        );
+
+        if (!productEntity) {
+          throw new Error(
+            NOT_FOUND_PRODUCT_ERROR + ': ' + productOptionEntity.productId,
+          );
+        }
+
+        return new ProductDto(
+          productEntity.id,
+          productEntity.name,
+          [
+            new ProductOptionDto(
+              productOptionEntity.id,
+              productOptionEntity.name,
+              productOptionEntity.price,
+              productOption.stock,
+              productEntity.id,
+            ),
+          ],
+          productEntity.status,
+        );
+      };
+
+      let result;
+      if (entityManager) {
+        result = await transactionCallback(entityManager);
+      } else {
+        result = await this.dataSource.transaction(transactionCallback);
       }
 
-      const productOption: ProductOption =
-        ProductOption.fromEntity(productOptionEntity);
-      productOption.decreaseStock(dto.quantity);
-
-      await this.productOptionRepository.updateStock(
-        dto.productOptionId,
-        productOption.stock,
-        transactionEntityManager,
-      );
-
-      const productEntity = await this.productRepository.findByIdWithLock(
-        productOptionEntity.productId,
-        transactionEntityManager,
-      );
-
-      if (!productEntity) {
-        throw new Error(
-          NOT_FOUND_PRODUCT_ERROR + ': ' + productOptionEntity.productId,
-        );
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if (lock) {
+        await this.redisLockService.releaseLock(lockResource, lock);
       }
-
-      return new ProductDto(
-        productEntity.id,
-        productEntity.name,
-        [
-          new ProductOptionDto(
-            productOptionEntity.id,
-            productOptionEntity.name,
-            productOptionEntity.price,
-            productOption.stock,
-            productEntity.id,
-          ),
-        ],
-        productEntity.status,
-      );
-    };
-
-    if (entityManager) {
-      // 이미 트랜잭션 내부에 있는 경우
-      return await transactionCallback(entityManager);
-    } else {
-      // 새로운 트랜잭션 시작
-      return await this.dataSource.transaction(transactionCallback);
     }
   }
 }

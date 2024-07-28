@@ -34,15 +34,11 @@ export class SpendUserBalanceUseCase implements ISpendUserBalanceUsecase {
       }
       const user = User.fromEntity(entity);
       const updatedUser = user.spend(dto.amount);
-      const updatedUserEntity = await this.userRepository.update(
-        updatedUser.toEntity(),
+      const updatedUserEntity = await this.userRepository.updateOptimistic(
+        { ...updatedUser.toEntity(), version: entity.version },
         entityManager,
       );
 
-      this.loggerService.log(
-        `사용자 잔액 차감 완료 : UserID=${updatedUser.id}, Amount=${dto.amount}`,
-        SpendUserBalanceUseCase.name,
-      );
       return User.fromEntity(updatedUserEntity).toDto();
     };
 

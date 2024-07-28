@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerService } from 'src/common/logger/logger.service';
+import { RedisLockService } from 'src/common/redis/redis-lock.service';
+import { RedisModule } from 'src/common/redis/redis.module';
 import { IDailyPopularProductRepositoryToken } from './domain/interface/repository/daily-popular-product.repository.interface';
 import { IProductOptionRepositoryToken } from './domain/interface/repository/product-option.repository.interface';
 import { IProductRepositoryToken } from './domain/interface/repository/product.repository.interface';
@@ -28,6 +31,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
       ProductOptionEntity,
       DailyPopularProductEntity,
     ]),
+    RedisModule,
   ],
   controllers: [ProductController],
   exports: [
@@ -37,6 +41,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     IDailyPopularProductRepositoryToken,
     IAccumulatePopularProductsSoldUseCaseToken,
     TypeOrmModule,
+    RedisLockService,
   ],
   providers: [
     {
@@ -71,6 +76,8 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
       provide: IAccumulatePopularProductsSoldUseCaseToken,
       useClass: AccumulatePopularProductsSoldUseCase,
     },
+    RedisLockService,
+    LoggerService,
   ],
 })
 export class ProductModule {}

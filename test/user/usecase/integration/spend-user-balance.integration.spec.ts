@@ -91,4 +91,32 @@ describe('SpendUserBalanceUseCase 통합 테스트', () => {
     expect(unchangedUser).not.toBeNull();
     expect(unchangedUser!.balance).toBe(1000);
   });
+
+  it('여러 요청이 동시에 들어왔을 실패하는 케이스가 존재하는지 테스트 ', async () => {
+    const initialBalance = 10000;
+    const spendAmount = 3000;
+    const concurrentRequests = 5;
+
+    const testUser = await userRepository.save({
+      name: '테스트 사용자',
+      balance: initialBalance,
+    });
+
+    const spendBalanceDto: SpendBalanceDto = {
+      userId: testUser.id,
+      amount: spendAmount,
+    };
+
+    const promises = Array(concurrentRequests)
+      .fill(null)
+      .map(() => spendUserBalanceUseCase.execute(spendBalanceDto));
+
+    const results = await Promise.allSettled(promises);
+
+    const failedRequests = results.filter(
+      (result) => result.status === 'rejected',
+    );
+
+    expect(failedRequests.length).not.toBe(0);
+  });
 });

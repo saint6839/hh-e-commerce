@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerService } from 'src/common/logger/logger.service';
+import { RedisModule } from 'src/common/redis/redis.module';
 import { CartModule } from '../../src/cart/cart.module';
 import { OrderModule } from '../../src/order/order.module';
 import { PaymentModule } from '../../src/payment/payment.module';
@@ -33,12 +35,20 @@ export async function setupTestingModule(): Promise<TestingModule> {
       OrderModule,
       CartModule,
       PaymentModule,
+      RedisModule,
     ],
     providers: [
       {
         provide: APP_PIPE,
         useClass: ValidationPipe,
       },
+      LoggerService,
     ],
   }).compile();
+}
+
+export async function teardownTestingModule(module: TestingModule) {
+  const redisClient = module.get('REDIS_CLIENT');
+  await redisClient.quit();
+  await module.close();
 }
