@@ -1,4 +1,11 @@
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  Param,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from 'src/common/api/api-response.dto';
 import { ApiSwaggerResponse } from 'src/common/swagger/api-response.decorator';
@@ -43,22 +50,6 @@ export class ProductController {
     );
   }
 
-  @Get('/:productId')
-  @ApiOperation({
-    summary: '특정 상품 조회',
-    description: '특정 상품을 조회합니다.',
-  })
-  @ApiSwaggerResponse(200, '특정 상품 조회 성공', ProductDto)
-  async getProduct(
-    @Param('productId') productId: number,
-  ): Promise<ApiResponseDto<ProductDto>> {
-    return new ApiResponseDto(
-      true,
-      '특정 상품 조회 성공',
-      await this.readProductUseCase.execute(productId),
-    );
-  }
-
   @Get('/popular')
   @ApiOperation({
     summary: '인기 상품 목록 조회',
@@ -74,6 +65,22 @@ export class ProductController {
       await this.browsePopularProductsFacadeUseCase.execute(
         browsePopularProductsFacadeDto,
       ),
+    );
+  }
+
+  @Get('/:productId')
+  @ApiOperation({
+    summary: '특정 상품 조회',
+    description: '특정 상품을 조회합니다.',
+  })
+  @ApiSwaggerResponse(200, '특정 상품 조회 성공', ProductDto)
+  async getProduct(
+    @Param('productId', ParseIntPipe) productId: number,
+  ): Promise<ApiResponseDto<ProductDto>> {
+    return new ApiResponseDto(
+      true,
+      '특정 상품 조회 성공',
+      await this.readProductUseCase.execute(productId),
     );
   }
 }
