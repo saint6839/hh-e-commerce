@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerService } from 'src/common/logger/logger.service';
+import { CacheService } from 'src/common/redis/redis-cache.service';
 import { ProductStatus } from 'src/product/domain/enum/product-status.enum';
 import {
   IDailyPopularProductRepository,
@@ -18,6 +20,8 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
   let mockReadProductUseCase: jest.Mocked<IReadProductUseCase>;
   let mockDailyPopularProductRepository: jest.Mocked<IDailyPopularProductRepository>;
   let mockDataSource: jest.Mocked<any>;
+  let mockCacheService: jest.Mocked<CacheService>;
+  let mockLoggerService: jest.Mocked<LoggerService>;
 
   beforeEach(async () => {
     mockReadProductUseCase = {
@@ -31,6 +35,15 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
     mockDataSource = {
       transaction: jest.fn((callback) => callback()),
     };
+
+    mockCacheService = {
+      get: jest.fn(),
+      set: jest.fn(),
+    } as any;
+
+    mockLoggerService = {
+      log: jest.fn(),
+    } as any;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -46,6 +59,14 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
         {
           provide: DataSource,
           useValue: mockDataSource,
+        },
+        {
+          provide: CacheService,
+          useValue: mockCacheService,
+        },
+        {
+          provide: LoggerService,
+          useValue: mockLoggerService,
         },
       ],
     }).compile();
@@ -132,5 +153,27 @@ describe('BrowsePopularProductsFacadeUseCase', () => {
     expect(result).toHaveLength(5);
     expect(result[0].id).toBe(1);
     expect(result[1].id).toBe(2);
+  });
+
+  it('캐시된 결과가 있을 경우 캐시된 결과를 반환하는지 테스트', async () => {
+    const cachedResult = [
+      new ProductDto(1, 'Cached Product 1', [], ProductStatus.ACTIVATE),
+      new ProductDto(2, 'Cached Product 2', [], ProductStatus.ACTIVATE),
+    ];
+
+    mockCacheService.get.mockResolvedValue(JSON.stringify(cachedResult));
+
+    const dto = new BrowsePopularProductsFacadeDto(
+      new Date('2021-08-01T00:00:00'),
+      new Date('2021-08-31T23:59:59'),
+    );
+
+    const result = await useCase.execute(dto);
+
+    expect(result).toEqual(cachedResult);
+    expect(mockCacheService.get).toHaveBeenCalled();
+    expect(
+      mockDailyPopularProductRepository.findTopSoldByDateRange,
+    ).not.toHaveBeenCalled();
   });
 });
