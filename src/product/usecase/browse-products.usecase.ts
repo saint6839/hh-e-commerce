@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/common/logger/logger.service';
+import { CacheService } from 'src/common/redis/redis-cache.service';
 import { DataSource, EntityManager } from 'typeorm';
 import {
   IProductOptionRepository,
@@ -20,14 +22,31 @@ export class BrowseProductsUseCase implements IBrowseProductsUseCase {
     @Inject(IProductOptionRepositoryToken)
     private readonly productOptionRepository: IProductOptionRepository,
     private readonly dataSource: DataSource,
+    private readonly cacheService: CacheService,
+    private readonly loggerService: LoggerService,
   ) {}
 
-  /**
-   * 전체 상품 목록과 해당 상품에 속한 옵션들을 조회하는 usecase
-   * @returns
-   */
+  private getCacheKey(): string {
+    return 'all_products1';
+  }
+
   async execute(
     dto: void,
+    entityManager?: EntityManager,
+  ): Promise<ProductDto[]> {
+    let result: ProductDto[];
+    const cacheKey = this.getCacheKey();
+    const cachedResult = await this.cacheService.get(cacheKey);
+
+    if (cachedResult) {
+      result = JSON.parse(cachedResult);
+    } else {
+      result = await this.fetchAndCacheProducts(entityManager);
+    }
+    return result;
+  }
+
+  private async fetchAndCacheProducts(
     entityManager?: EntityManager,
   ): Promise<ProductDto[]> {
     const transactionCallback = async (
@@ -61,13 +80,19 @@ export class BrowseProductsUseCase implements IBrowseProductsUseCase {
         );
       });
 
-      return Promise.all(productDtosPromises);
+      return await Promise.all(productDtosPromises);
     };
 
+    let products: ProductDto[];
     if (entityManager) {
-      return transactionCallback(entityManager);
+      products = await transactionCallback(entityManager);
     } else {
-      return this.dataSource.transaction(transactionCallback);
+      products = await this.dataSource.transaction(transactionCallback);
     }
+
+    const cacheKey = this.getCacheKey();
+    await this.cacheService.set(cacheKey, JSON.stringify(products), 600);
+
+    return products;
   }
 }

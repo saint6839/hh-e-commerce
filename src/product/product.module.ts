@@ -18,6 +18,7 @@ import { DailyPopularProductRepository } from './infrastructure/repository/daily
 import { ProductOptionRepository } from './infrastructure/repository/product-option.repository';
 import { ProductRepository } from './infrastructure/repository/product.repository';
 import { ProductController } from './presentation/controller/product.controller';
+import { BrowseProductsCacheService } from './service/browse-products-cache.service';
 import { AccumulatePopularProductsSoldUseCase } from './usecase/accumulate-popular-products-sold.usecase';
 import { BrowsePopularProductsFacadeUseCase } from './usecase/browse-popular-products-facade.usecase';
 import { BrowseProductsUseCase } from './usecase/browse-products.usecase';
@@ -42,6 +43,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     IAccumulatePopularProductsSoldUseCaseToken,
     TypeOrmModule,
     RedisLockService,
+    BrowseProductsCacheService,
   ],
   providers: [
     {
@@ -78,6 +80,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     },
     RedisLockService,
     LoggerService,
+    BrowseProductsCacheService,
   ],
 })
 export class ProductModule {}
