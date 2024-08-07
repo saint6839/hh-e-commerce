@@ -3,13 +3,24 @@ import { EventBus } from '@nestjs/cqrs';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import {
+  IOrderItemRepository,
+  IOrderItemRepositoryToken,
+} from 'src/order/domain/interface/repository/order-item.repository.interface';
+import {
   IOrderRepository,
   IOrderRepositoryToken,
 } from 'src/order/domain/interface/repository/order.repository.interface';
+import { OrderItemDto } from 'src/order/presentation/dto/response/order-item.dto';
+import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 import {
   NOT_FOUND_ORDER_ERROR,
   OrderEntity,
 } from 'src/order/repository/entity/order.entity';
+import {
+  IAccumulatePopularProductsSoldUseCase,
+  IAccumulatePopularProductsSoldUseCaseToken,
+} from 'src/product/domain/interface/usecase/accumulate-popular-proudcts-sold.usecase.interface';
+import { AccumulatePopularProductsSoldDto } from 'src/product/presentation/dto/request/accumulate-popular-products-sold.dto';
 import {
   ISpendUserBalanceUsecase,
   ISpendUserBalanceUsecaseToken,
@@ -44,6 +55,10 @@ export class CompletePaymentFacadeUseCase
     private readonly paymentRepository: IPaymentRepository,
     @Inject(IOrderRepositoryToken)
     private readonly orderRepository: IOrderRepository,
+    @Inject(IOrderItemRepositoryToken)
+    private readonly orderItemRepository: IOrderItemRepository,
+    @Inject(IAccumulatePopularProductsSoldUseCaseToken)
+    private readonly accumulatePopularProductsSoldUseCase: IAccumulatePopularProductsSoldUseCase,
     @Inject(ICompletePaymentUseCaseToken)
     private readonly completePaymentUseCase: ICompletePaymentUseCase,
     @Inject(ISpendUserBalanceUsecaseToken)
@@ -53,6 +68,12 @@ export class CompletePaymentFacadeUseCase
     private readonly eventBus: EventBus,
   ) {}
 
+  /**
+   * 주문 이후 생성된 주문서와 결제 초기데이터를 바탕으로 실제 결제를 완료하는 facade usecase
+   * 결제가 성공할 경우 주문서의 상태와 결제 상태를 결제완료로 변경하고, 주문서에 포함된 상품들의 판매량을 누적합니다.
+   * 결제가 실패할 경우 주문서의 상태를 취소로 변경하고, 결제 상태를 실패로 변경합니다.
+   * @returns
+   */
   async execute(dto: CompletePaymentFacadeDto): Promise<PaymentResultDto> {
     let paymentEntity: PaymentEntity | null = null;
     let orderEntity: OrderEntity | null = null;
@@ -71,6 +92,28 @@ export class CompletePaymentFacadeUseCase
 
           await this.spendUserBalanceUsecase.execute(
             new SpendBalanceDto(dto.userId, paymentEntity.amount),
+          );
+
+          const orderItemEntities =
+            await this.orderItemRepository.findByOrderId(
+              orderEntity.id,
+              entityManager,
+            );
+
+          await this.accumulatePopularProductsSoldUseCase.execute(
+            new AccumulatePopularProductsSoldDto(
+              orderItemEntities.map(
+                (orderItem: OrderItemEntity) =>
+                  new OrderItemDto(
+                    orderItem.id,
+                    orderItem.orderId,
+                    orderItem.productOptionId,
+                    orderItem.quantity,
+                    orderItem.totalPriceAtOrder,
+                  ),
+              ),
+            ),
+            entityManager,
           );
 
           const paymentResult = await this.completePaymentUseCase.execute(

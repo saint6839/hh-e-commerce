@@ -2,6 +2,7 @@ import { EventBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
+import { IOrderItemRepositoryToken } from 'src/order/domain/interface/repository/order-item.repository.interface';
 import { IOrderRepositoryToken } from 'src/order/domain/interface/repository/order.repository.interface';
 import { NOT_FOUND_ORDER_ERROR } from 'src/order/repository/entity/order.entity';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
@@ -11,6 +12,7 @@ import { PaymentCompletedEvent } from 'src/payment/event/payment-completed.event
 import { NOT_FOUND_PAYMENT_ERROR } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
+import { IAccumulatePopularProductsSoldUseCaseToken } from 'src/product/domain/interface/usecase/accumulate-popular-proudcts-sold.usecase.interface';
 import { ISpendUserBalanceUsecaseToken } from 'src/user/domain/interface/usecase/spend-user-balance.usecase.interface';
 import { DataSource } from 'typeorm';
 
@@ -18,8 +20,10 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
   let completePaymentFacadeUseCase: CompletePaymentFacadeUseCase;
   let mockPaymentRepository: any;
   let mockOrderRepository: any;
+  let mockOrderItemRepository: any;
   let mockCompletePaymentUseCase: any;
   let mockSpendUserBalanceUsecase: any;
+  let mockAccumulatePopularProductsSoldUseCase: any;
   let mockDataSource: any;
   let mockLoggerService: any;
   let mockEventBus: any;
@@ -33,10 +37,16 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       findById: jest.fn(),
       updateStatus: jest.fn(),
     };
+    mockOrderItemRepository = {
+      findByOrderId: jest.fn(),
+    };
     mockCompletePaymentUseCase = {
       execute: jest.fn(),
     };
     mockSpendUserBalanceUsecase = {
+      execute: jest.fn(),
+    };
+    mockAccumulatePopularProductsSoldUseCase = {
       execute: jest.fn(),
     };
     mockDataSource = {
@@ -56,12 +66,20 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         { provide: IPaymentRepositoryToken, useValue: mockPaymentRepository },
         { provide: IOrderRepositoryToken, useValue: mockOrderRepository },
         {
+          provide: IOrderItemRepositoryToken,
+          useValue: mockOrderItemRepository,
+        },
+        {
           provide: ICompletePaymentUseCaseToken,
           useValue: mockCompletePaymentUseCase,
         },
         {
           provide: ISpendUserBalanceUsecaseToken,
           useValue: mockSpendUserBalanceUsecase,
+        },
+        {
+          provide: IAccumulatePopularProductsSoldUseCaseToken,
+          useValue: mockAccumulatePopularProductsSoldUseCase,
         },
         { provide: DataSource, useValue: mockDataSource },
         { provide: LoggerService, useValue: mockLoggerService },
@@ -84,6 +102,22 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       status: PaymentStatus.PENDING,
     };
     const mockOrder = { id: 1 };
+    const mockOrderItems = [
+      {
+        id: 1,
+        orderId: 1,
+        productOptionId: 1,
+        quantity: 2,
+        totalPriceAtOrder: 500,
+      },
+      {
+        id: 2,
+        orderId: 1,
+        productOptionId: 2,
+        quantity: 1,
+        totalPriceAtOrder: 500,
+      },
+    ];
     const mockPaymentResult = {
       paymentId: 1,
       userId: 1,
@@ -94,11 +128,15 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     mockPaymentRepository.findById.mockResolvedValue(mockPayment);
     mockOrderRepository.findById.mockResolvedValue(mockOrder);
+    mockOrderItemRepository.findByOrderId.mockResolvedValue(mockOrderItems);
     mockCompletePaymentUseCase.execute.mockResolvedValue(mockPaymentResult);
     mockSpendUserBalanceUsecase.execute.mockResolvedValue({
       id: 1,
       balance: 9000,
     });
+    mockAccumulatePopularProductsSoldUseCase.execute.mockResolvedValue(
+      undefined,
+    );
 
     const result = await completePaymentFacadeUseCase.execute(dto);
 
@@ -108,6 +146,29 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         userId: mockPaymentResult.userId,
         amount: mockPaymentResult.amount,
       }),
+    );
+    expect(
+      mockAccumulatePopularProductsSoldUseCase.execute,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderItems: expect.arrayContaining([
+          expect.objectContaining({
+            id: 1,
+            orderId: 1,
+            productOptionId: 1,
+            quantity: 2,
+            totalPriceAtOrder: 500,
+          }),
+          expect.objectContaining({
+            id: 2,
+            orderId: 1,
+            productOptionId: 2,
+            quantity: 1,
+            totalPriceAtOrder: 500,
+          }),
+        ]),
+      }),
+      expect.anything(),
     );
     expect(mockEventBus.publish).toHaveBeenCalledTimes(1);
     expect(mockEventBus.publish).toHaveBeenCalledWith(
@@ -136,6 +197,7 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     mockPaymentRepository.findById.mockResolvedValue(mockPayment);
     mockOrderRepository.findById.mockResolvedValue(mockOrder);
+    mockOrderItemRepository.findByOrderId.mockResolvedValue([]);
     mockCompletePaymentUseCase.execute.mockResolvedValue(mockPaymentResult);
     mockSpendUserBalanceUsecase.execute.mockResolvedValue({
       id: 1,
@@ -163,6 +225,7 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     mockPaymentRepository.findById.mockResolvedValue(mockPayment);
     mockOrderRepository.findById.mockResolvedValue(mockOrder);
+    mockOrderItemRepository.findByOrderId.mockResolvedValue([]);
     mockSpendUserBalanceUsecase.execute.mockRejectedValue(
       new Error('잔액 부족'),
     );
