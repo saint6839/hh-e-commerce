@@ -17,6 +17,7 @@ import {
 } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
+import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-option.entity';
 import { INSUFFICIENT_BALANCE_ERROR } from 'src/user/domain/entity/user';
 import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
@@ -139,8 +140,11 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     expect(updatedUser).toBeDefined();
     expect(updatedUser?.balance).toBe(5000);
 
-    expect(publishSpy).toHaveBeenCalledTimes(1);
+    expect(publishSpy).toHaveBeenCalledTimes(2);
     expect(publishSpy).toHaveBeenCalledWith(expect.any(PaymentCompletedEvent));
+    expect(publishSpy).toHaveBeenCalledWith(
+      expect.any(AccumulatePopularProductsSoldEvent),
+    );
   });
 
   it('잔액이 부족한 경우 예외를 발생시키고 이벤트가 발행되지 않는지 테스트', async () => {

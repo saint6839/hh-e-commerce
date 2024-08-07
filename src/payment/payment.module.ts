@@ -18,6 +18,7 @@ import { PaymentController } from './presentation/controller/payment.controller'
 import { CompletePaymentFacadeUseCase } from './usecase/complete-payment-facade.usecase';
 import { CompletePaymentUseCase } from './usecase/complete-payment.usecase';
 import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
+import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
     },
     LoggerService,
     PaymentCompletedListener,
+    ExternalDataPlatformService,
   ],
 })
 export class PaymentModule {}

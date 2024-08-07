@@ -16,11 +16,7 @@ import {
   NOT_FOUND_ORDER_ERROR,
   OrderEntity,
 } from 'src/order/repository/entity/order.entity';
-import {
-  IAccumulatePopularProductsSoldUseCase,
-  IAccumulatePopularProductsSoldUseCaseToken,
-} from 'src/product/domain/interface/usecase/accumulate-popular-proudcts-sold.usecase.interface';
-import { AccumulatePopularProductsSoldDto } from 'src/product/presentation/dto/request/accumulate-popular-products-sold.dto';
+import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import {
   ISpendUserBalanceUsecase,
   ISpendUserBalanceUsecaseToken,
@@ -57,8 +53,6 @@ export class CompletePaymentFacadeUseCase
     private readonly orderRepository: IOrderRepository,
     @Inject(IOrderItemRepositoryToken)
     private readonly orderItemRepository: IOrderItemRepository,
-    @Inject(IAccumulatePopularProductsSoldUseCaseToken)
-    private readonly accumulatePopularProductsSoldUseCase: IAccumulatePopularProductsSoldUseCase,
     @Inject(ICompletePaymentUseCaseToken)
     private readonly completePaymentUseCase: ICompletePaymentUseCase,
     @Inject(ISpendUserBalanceUsecaseToken)
@@ -94,28 +88,6 @@ export class CompletePaymentFacadeUseCase
             new SpendBalanceDto(dto.userId, paymentEntity.amount),
           );
 
-          const orderItemEntities =
-            await this.orderItemRepository.findByOrderId(
-              orderEntity.id,
-              entityManager,
-            );
-
-          await this.accumulatePopularProductsSoldUseCase.execute(
-            new AccumulatePopularProductsSoldDto(
-              orderItemEntities.map(
-                (orderItem: OrderItemEntity) =>
-                  new OrderItemDto(
-                    orderItem.id,
-                    orderItem.orderId,
-                    orderItem.productOptionId,
-                    orderItem.quantity,
-                    orderItem.totalPriceAtOrder,
-                  ),
-              ),
-            ),
-            entityManager,
-          );
-
           const paymentResult = await this.completePaymentUseCase.execute(
             new CompletePaymentDto(dto.paymentId, dto.mid, dto.tid),
             entityManager,
@@ -130,6 +102,28 @@ export class CompletePaymentFacadeUseCase
                 paymentResult.userId,
                 paymentResult.amount,
                 paymentResult.status,
+              ),
+            );
+
+            const orderItemEntities =
+              await this.orderItemRepository.findByOrderId(
+                orderEntity.id,
+                entityManager,
+              );
+
+            // 인기 상품 판매량 누적 이벤트 발행
+            this.eventBus.publish(
+              new AccumulatePopularProductsSoldEvent(
+                orderItemEntities.map(
+                  (orderItem: OrderItemEntity) =>
+                    new OrderItemDto(
+                      orderItem.id,
+                      orderItem.orderId,
+                      orderItem.productOptionId,
+                      orderItem.quantity,
+                      orderItem.totalPriceAtOrder,
+                    ),
+                ),
               ),
             );
           }

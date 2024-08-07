@@ -12,7 +12,7 @@ import { PaymentCompletedEvent } from 'src/payment/event/payment-completed.event
 import { NOT_FOUND_PAYMENT_ERROR } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
-import { IAccumulatePopularProductsSoldUseCaseToken } from 'src/product/domain/interface/usecase/accumulate-popular-proudcts-sold.usecase.interface';
+import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import { ISpendUserBalanceUsecaseToken } from 'src/user/domain/interface/usecase/spend-user-balance.usecase.interface';
 import { DataSource } from 'typeorm';
 
@@ -76,10 +76,6 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         {
           provide: ISpendUserBalanceUsecaseToken,
           useValue: mockSpendUserBalanceUsecase,
-        },
-        {
-          provide: IAccumulatePopularProductsSoldUseCaseToken,
-          useValue: mockAccumulatePopularProductsSoldUseCase,
         },
         { provide: DataSource, useValue: mockDataSource },
         { provide: LoggerService, useValue: mockLoggerService },
@@ -147,32 +143,12 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         amount: mockPaymentResult.amount,
       }),
     );
-    expect(
-      mockAccumulatePopularProductsSoldUseCase.execute,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderItems: expect.arrayContaining([
-          expect.objectContaining({
-            id: 1,
-            orderId: 1,
-            productOptionId: 1,
-            quantity: 2,
-            totalPriceAtOrder: 500,
-          }),
-          expect.objectContaining({
-            id: 2,
-            orderId: 1,
-            productOptionId: 2,
-            quantity: 1,
-            totalPriceAtOrder: 500,
-          }),
-        ]),
-      }),
-      expect.anything(),
-    );
-    expect(mockEventBus.publish).toHaveBeenCalledTimes(1);
+    expect(mockEventBus.publish).toHaveBeenCalledTimes(2);
     expect(mockEventBus.publish).toHaveBeenCalledWith(
       expect.any(PaymentCompletedEvent),
+    );
+    expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect.any(AccumulatePopularProductsSoldEvent),
     );
   });
 
