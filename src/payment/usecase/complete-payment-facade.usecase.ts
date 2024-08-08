@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventBus } from '@nestjs/cqrs';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import {
@@ -15,17 +16,14 @@ import {
   NOT_FOUND_ORDER_ERROR,
   OrderEntity,
 } from 'src/order/repository/entity/order.entity';
-import {
-  IAccumulatePopularProductsSoldUseCase,
-  IAccumulatePopularProductsSoldUseCaseToken,
-} from 'src/product/domain/interface/usecase/accumulate-popular-proudcts-sold.usecase.interface';
-import { AccumulatePopularProductsSoldDto } from 'src/product/presentation/dto/request/accumulate-popular-products-sold.dto';
+import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import {
   ISpendUserBalanceUsecase,
   ISpendUserBalanceUsecaseToken,
 } from 'src/user/domain/interface/usecase/spend-user-balance.usecase.interface';
 import { SpendBalanceDto } from 'src/user/presentation/dto/request/spend-balance.dto';
 import { DataSource, EntityManager } from 'typeorm';
+import { PaymentStatus } from '../domain/enum/payment-status.enum';
 import {
   IPaymentRepository,
   IPaymentRepositoryToken,
@@ -35,6 +33,7 @@ import {
   ICompletePaymentUseCase,
   ICompletePaymentUseCaseToken,
 } from '../domain/interface/usecase/complete-payment.usecase.interface';
+import { PaymentCompletedEvent } from '../event/payment-completed.event';
 import {
   NOT_FOUND_PAYMENT_ERROR,
   PaymentEntity,
@@ -54,14 +53,13 @@ export class CompletePaymentFacadeUseCase
     private readonly orderRepository: IOrderRepository,
     @Inject(IOrderItemRepositoryToken)
     private readonly orderItemRepository: IOrderItemRepository,
-    @Inject(IAccumulatePopularProductsSoldUseCaseToken)
-    private readonly accumulatePopularProductsSoldUseCase: IAccumulatePopularProductsSoldUseCase,
     @Inject(ICompletePaymentUseCaseToken)
     private readonly completePaymentUseCase: ICompletePaymentUseCase,
     @Inject(ISpendUserBalanceUsecaseToken)
     private readonly spendUserBalanceUsecase: ISpendUserBalanceUsecase,
     private readonly dataSource: DataSource,
     private readonly loggerService: LoggerService,
+    private readonly eventBus: EventBus,
   ) {}
 
   /**
@@ -86,59 +84,80 @@ export class CompletePaymentFacadeUseCase
             entityManager,
           );
 
-          const orderItemEntities =
-            await this.orderItemRepository.findByOrderId(
-              orderEntity.id,
-              entityManager,
-            );
-
-          await this.accumulatePopularProductsSoldUseCase.execute(
-            new AccumulatePopularProductsSoldDto(
-              orderItemEntities.map(
-                (orderItem: OrderItemEntity) =>
-                  new OrderItemDto(
-                    orderItem.id,
-                    orderItem.orderId,
-                    orderItem.productOptionId,
-                    orderItem.quantity,
-                    orderItem.totalPriceAtOrder,
-                  ),
-              ),
-            ),
-            entityManager,
-          );
-
           await this.spendUserBalanceUsecase.execute(
-            new SpendBalanceDto(paymentEntity.userId, paymentEntity.amount),
-            entityManager,
+            new SpendBalanceDto(dto.userId, paymentEntity.amount),
           );
 
-          return await this.completePaymentUseCase.execute(
+          const paymentResult = await this.completePaymentUseCase.execute(
             new CompletePaymentDto(dto.paymentId, dto.mid, dto.tid),
             entityManager,
           );
+
+          if (paymentResult.status === PaymentStatus.COMPLETED) {
+            // 외부 플랫폼에 결제 정보 저장하는 이벤트 발행
+            this.eventBus.publish(
+              new PaymentCompletedEvent(
+                paymentResult.paymentId,
+                orderEntity.id,
+                paymentResult.userId,
+                paymentResult.amount,
+                paymentResult.status,
+              ),
+            );
+
+            const orderItemEntities =
+              await this.orderItemRepository.findByOrderId(
+                orderEntity.id,
+                entityManager,
+              );
+
+            // 인기 상품 판매량 누적 이벤트 발행
+            this.eventBus.publish(
+              new AccumulatePopularProductsSoldEvent(
+                orderItemEntities.map(
+                  (orderItem: OrderItemEntity) =>
+                    new OrderItemDto(
+                      orderItem.id,
+                      orderItem.orderId,
+                      orderItem.productOptionId,
+                      orderItem.quantity,
+                      orderItem.totalPriceAtOrder,
+                    ),
+                ),
+              ),
+            );
+          }
+
+          return paymentResult;
         },
       );
 
       return result;
     } catch (error) {
-      if (paymentEntity && 'fail' in paymentEntity) {
-        (paymentEntity as PaymentEntity).fail();
-        await this.paymentRepository.update(paymentEntity as PaymentEntity);
-      }
-      if (orderEntity && 'fail' in orderEntity) {
-        (orderEntity as OrderEntity).fail();
-        await this.orderRepository.updateStatus(
-          (orderEntity as OrderEntity).id,
-          OrderStatus.CANCELLED,
-        );
-      }
-      this.loggerService.warn(
-        `결제 실패 : UserID=${dto.userId} PaymentID=${dto.paymentId} Error=${error.message}`,
-      );
-
+      await this.handleFailure(paymentEntity, orderEntity, dto, error);
       throw error;
     }
+  }
+
+  private async handleFailure(
+    paymentEntity: PaymentEntity | null,
+    orderEntity: OrderEntity | null,
+    dto: CompletePaymentFacadeDto,
+    error: any,
+  ) {
+    if (paymentEntity) {
+      paymentEntity.fail();
+      await this.paymentRepository.update(paymentEntity);
+    }
+    if (orderEntity) {
+      await this.orderRepository.updateStatus(
+        orderEntity.id,
+        OrderStatus.CANCELLED,
+      );
+    }
+    this.loggerService.warn(
+      `결제 실패 : UserID=${dto.userId} PaymentID=${dto.paymentId} Error=${error.message}`,
+    );
   }
 
   private async getPaymentEntity(

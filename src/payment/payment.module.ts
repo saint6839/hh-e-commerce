@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderModule } from 'src/order/order.module';
@@ -12,10 +13,12 @@ import { ICreatePaymentUseCaseToken } from './domain/interface/usecase/create-pa
 import { PaymentEntity } from './infrastructure/entity/payment.entity';
 import { PaymentRepository } from './infrastructure/repository/payment.repository';
 import { PaymentGatewayService } from './infrastructure/service/payment-gateway.service';
+import { PaymentCompletedListener } from './listener/payment-completed.listener';
 import { PaymentController } from './presentation/controller/payment.controller';
 import { CompletePaymentFacadeUseCase } from './usecase/complete-payment-facade.usecase';
 import { CompletePaymentUseCase } from './usecase/complete-payment.usecase';
 import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
+import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 
 @Module({
   imports: [
@@ -23,6 +26,7 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
     ProductModule,
     UserModule,
     forwardRef(() => OrderModule),
+    CqrsModule,
   ],
   exports: [ICreatePaymentUseCaseToken],
   controllers: [PaymentController],
@@ -48,6 +52,8 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
       useClass: CompletePaymentFacadeUseCase,
     },
     LoggerService,
+    PaymentCompletedListener,
+    ExternalDataPlatformService,
   ],
 })
 export class PaymentModule {}
