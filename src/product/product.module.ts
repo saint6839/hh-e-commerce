@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { RedisLockService } from 'src/common/redis/redis-lock.service';
@@ -17,6 +18,7 @@ import { ProductEntity } from './infrastructure/entity/product.entity';
 import { DailyPopularProductRepository } from './infrastructure/repository/daily-popular-product.repository';
 import { ProductOptionRepository } from './infrastructure/repository/product-option.repository';
 import { ProductRepository } from './infrastructure/repository/product.repository';
+import { AccumulatePopularProductsSoldListener } from './listener/accumulate-popular-products.listener';
 import { ProductController } from './presentation/controller/product.controller';
 import { BrowseProductsCacheService } from './service/browse-products-cache.service';
 import { AccumulatePopularProductsSoldUseCase } from './usecase/accumulate-popular-products-sold.usecase';
@@ -33,6 +35,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
       DailyPopularProductEntity,
     ]),
     RedisModule,
+    CqrsModule,
   ],
   controllers: [ProductController],
   exports: [
@@ -81,6 +84,7 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     RedisLockService,
     LoggerService,
     BrowseProductsCacheService,
+    AccumulatePopularProductsSoldListener,
   ],
 })
 export class ProductModule {}
