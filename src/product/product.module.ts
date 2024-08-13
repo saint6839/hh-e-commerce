@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { RedisLockService } from 'src/common/redis/redis-lock.service';
@@ -36,6 +37,21 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     ]),
     RedisModule,
     CqrsModule,
+    ClientsModule.register([
+      {
+        name: 'KAFKA_CLIENT',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'product',
+            brokers: ['localhost:29092'],
+          },
+          consumer: {
+            groupId: 'product-consumer',
+          },
+        },
+      },
+    ]),
   ],
   controllers: [ProductController],
   exports: [

@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ClientsModule } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { CartModule } from './cart/cart.module';
+import { getKafkaConfig } from './common/kafka/kafka.config';
 import { LoggerService } from './common/logger/logger.service';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
@@ -13,6 +15,7 @@ import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
+    ClientsModule.registerAsync(getKafkaConfig()),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -39,7 +42,7 @@ import { UserModule } from './user/user.module';
     PaymentModule,
     EventEmitterModule.forRoot(),
   ],
-  exports: [LoggerService],
+  exports: [LoggerService, ClientsModule],
   controllers: [AppController],
   providers: [LoggerService],
 })

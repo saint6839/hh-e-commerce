@@ -42,6 +42,12 @@ export async function setupTestingModule(): Promise<TestingModule> {
         provide: APP_PIPE,
         useClass: ValidationPipe,
       },
+      {
+        provide: 'KAFKA_CLIENT',
+        useFactory: () => ({
+          emit: jest.fn(),
+        }),
+      },
       LoggerService,
     ],
   }).compile();
