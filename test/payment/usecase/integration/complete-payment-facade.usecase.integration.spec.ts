@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { EventBus } from '@nestjs/cqrs';
+import { ClientKafka } from '@nestjs/microservices';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
@@ -10,14 +10,12 @@ import {
 } from 'src/order/repository/entity/order.entity';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 import { ICompletePaymentFacadeUseCaseToken } from 'src/payment/domain/interface/usecase/complete-payment-facade.usecase.interface';
-import { PaymentCompletedEvent } from 'src/payment/event/payment-completed.event';
 import {
   NOT_FOUND_PAYMENT_ERROR,
   PaymentEntity,
 } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
-import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-option.entity';
 import { INSUFFICIENT_BALANCE_ERROR } from 'src/user/domain/entity/user';
 import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
@@ -32,7 +30,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
   let orderItemRepository: Repository<OrderItemEntity>;
   let userRepository: Repository<UserEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
-  let eventBus: EventBus;
+  let kafkaClient: ClientKafka;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -52,7 +50,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     productOptionRepository = moduleFixture.get(
       getRepositoryToken(ProductOptionEntity),
     );
-    eventBus = moduleFixture.get(EventBus);
+    kafkaClient = moduleFixture.get<ClientKafka>('KAFKA_CLIENT');
   });
 
   afterAll(async () => {
@@ -110,7 +108,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       'test_tid',
     );
 
-    const publishSpy = jest.spyOn(eventBus, 'publish');
+    const emitSpy = jest.spyOn(kafkaClient, 'emit');
 
     // when
     const result = await completePaymentFacadeUseCase.execute(
@@ -140,10 +138,14 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     expect(updatedUser).toBeDefined();
     expect(updatedUser?.balance).toBe(5000);
 
-    expect(publishSpy).toHaveBeenCalledTimes(2);
-    expect(publishSpy).toHaveBeenCalledWith(expect.any(PaymentCompletedEvent));
-    expect(publishSpy).toHaveBeenCalledWith(
-      expect.any(AccumulatePopularProductsSoldEvent),
+    expect(emitSpy).toHaveBeenCalledTimes(2);
+    expect(emitSpy).toHaveBeenCalledWith(
+      'payment.completed',
+      expect.any(Object),
+    );
+    expect(emitSpy).toHaveBeenCalledWith(
+      'product.popular.accumulate',
+      expect.any(Object),
     );
   });
 
@@ -174,7 +176,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       'test_tid',
     );
 
-    const publishSpy = jest.spyOn(eventBus, 'publish');
+    const emitSpy = jest.spyOn(kafkaClient, 'emit');
 
     // when & then
     await expect(
@@ -199,7 +201,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     expect(unchangedUser).toBeDefined();
     expect(unchangedUser?.balance).toBe(1000);
 
-    expect(publishSpy).not.toHaveBeenCalled();
+    expect(emitSpy).not.toHaveBeenCalled();
   });
 
   it('존재하지 않는 결제에 대해 예외를 발생시키는지 테스트', async () => {

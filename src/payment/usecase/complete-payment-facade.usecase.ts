@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventBus } from '@nestjs/cqrs';
+import { ClientKafka } from '@nestjs/microservices';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import {
@@ -16,7 +16,6 @@ import {
   NOT_FOUND_ORDER_ERROR,
   OrderEntity,
 } from 'src/order/repository/entity/order.entity';
-import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import {
   ISpendUserBalanceUsecase,
   ISpendUserBalanceUsecaseToken,
@@ -33,7 +32,6 @@ import {
   ICompletePaymentUseCase,
   ICompletePaymentUseCaseToken,
 } from '../domain/interface/usecase/complete-payment.usecase.interface';
-import { PaymentCompletedEvent } from '../event/payment-completed.event';
 import {
   NOT_FOUND_PAYMENT_ERROR,
   PaymentEntity,
@@ -59,15 +57,9 @@ export class CompletePaymentFacadeUseCase
     private readonly spendUserBalanceUsecase: ISpendUserBalanceUsecase,
     private readonly dataSource: DataSource,
     private readonly loggerService: LoggerService,
-    private readonly eventBus: EventBus,
+    @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
   ) {}
 
-  /**
-   * 주문 이후 생성된 주문서와 결제 초기데이터를 바탕으로 실제 결제를 완료하는 facade usecase
-   * 결제가 성공할 경우 주문서의 상태와 결제 상태를 결제완료로 변경하고, 주문서에 포함된 상품들의 판매량을 누적합니다.
-   * 결제가 실패할 경우 주문서의 상태를 취소로 변경하고, 결제 상태를 실패로 변경합니다.
-   * @returns
-   */
   async execute(dto: CompletePaymentFacadeDto): Promise<PaymentResultDto> {
     let paymentEntity: PaymentEntity | null = null;
     let orderEntity: OrderEntity | null = null;
@@ -95,15 +87,13 @@ export class CompletePaymentFacadeUseCase
 
           if (paymentResult.status === PaymentStatus.COMPLETED) {
             // 외부 플랫폼에 결제 정보 저장하는 이벤트 발행
-            this.eventBus.publish(
-              new PaymentCompletedEvent(
-                paymentResult.paymentId,
-                orderEntity.id,
-                paymentResult.userId,
-                paymentResult.amount,
-                paymentResult.status,
-              ),
-            );
+            this.kafkaClient.emit('payment.completed', {
+              paymentId: paymentResult.paymentId,
+              orderId: orderEntity.id,
+              userId: paymentResult.userId,
+              amount: paymentResult.amount,
+              status: paymentResult.status,
+            });
 
             const orderItemEntities =
               await this.orderItemRepository.findByOrderId(
@@ -112,20 +102,18 @@ export class CompletePaymentFacadeUseCase
               );
 
             // 인기 상품 판매량 누적 이벤트 발행
-            this.eventBus.publish(
-              new AccumulatePopularProductsSoldEvent(
-                orderItemEntities.map(
-                  (orderItem: OrderItemEntity) =>
-                    new OrderItemDto(
-                      orderItem.id,
-                      orderItem.orderId,
-                      orderItem.productOptionId,
-                      orderItem.quantity,
-                      orderItem.totalPriceAtOrder,
-                    ),
-                ),
+            this.kafkaClient.emit('product.popular.accumulate', {
+              orderItems: orderItemEntities.map(
+                (orderItem: OrderItemEntity) =>
+                  new OrderItemDto(
+                    orderItem.id,
+                    orderItem.orderId,
+                    orderItem.productOptionId,
+                    orderItem.quantity,
+                    orderItem.totalPriceAtOrder,
+                  ),
               ),
-            );
+            });
           }
 
           return paymentResult;

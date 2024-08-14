@@ -1,6 +1,5 @@
 import { Inject, Logger } from '@nestjs/common';
-import { EventBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { SendSlackMessageEvent } from 'src/common/slack/event/send-slack.event';
+import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import {
   IAccumulatePopularProductsSoldUseCase,
   IAccumulatePopularProductsSoldUseCaseToken,
@@ -8,10 +7,7 @@ import {
 import { AccumulatePopularProductsSoldEvent } from '../event/accumulate-popular-products-sold.event';
 import { AccumulatePopularProductsSoldDto } from '../presentation/dto/request/accumulate-popular-products-sold.dto';
 
-@EventsHandler(AccumulatePopularProductsSoldEvent)
-export class AccumulatePopularProductsSoldListener
-  implements IEventHandler<AccumulatePopularProductsSoldEvent>
-{
+export class AccumulatePopularProductsSoldListener {
   private readonly logger = new Logger(
     AccumulatePopularProductsSoldListener.name,
   );
@@ -21,9 +17,10 @@ export class AccumulatePopularProductsSoldListener
   constructor(
     @Inject(IAccumulatePopularProductsSoldUseCaseToken)
     private readonly accumulatePopularProductsSoldUseCase: IAccumulatePopularProductsSoldUseCase,
-    private readonly eventBus: EventBus,
+    @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
   ) {}
 
+  @MessagePattern('product.popular.accumulate')
   async handle(event: AccumulatePopularProductsSoldEvent) {
     let retries = 0;
     while (retries < this.maxRetries) {
@@ -57,11 +54,9 @@ export class AccumulatePopularProductsSoldListener
    * @param message
    */
   private sendSlackNotification(message: string): void {
-    this.eventBus.publish(
-      new SendSlackMessageEvent(
-        '#error-alerts',
-        `🚨 Error in AccumulatePopularProductsSoldListener: ${message}`,
-      ),
-    );
+    this.kafkaClient.emit('slack.notification', {
+      channel: '#error-alerts',
+      text: `🚨 Error in AccumulatePopularProductsSoldListener: ${message}`,
+    });
   }
 }

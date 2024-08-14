@@ -1,24 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { EventBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 import { LoggerService } from 'src/common/logger/logger.service';
-import { SendSlackMessageEvent } from 'src/common/slack/event/send-slack.event';
 import { PaymentCompletedEvent } from '../event/payment-completed.event';
 
 @Injectable()
-@EventsHandler(PaymentCompletedEvent)
-export class PaymentCompletedListener
-  implements IEventHandler<PaymentCompletedEvent>
-{
+export class PaymentCompletedListener {
   private readonly maxRetries = 3;
   private readonly retryDelay = 1000;
 
   constructor(
     private readonly loggerService: LoggerService,
-    private readonly eventBus: EventBus,
+    @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
     private readonly externalDataPlatformService: ExternalDataPlatformService,
   ) {}
 
+  @MessagePattern('payment.completed')
   async handle(event: PaymentCompletedEvent) {
     let retries = 0;
     while (retries < this.maxRetries) {
@@ -58,12 +55,10 @@ export class PaymentCompletedListener
   }
 
   private sendSlackNotification(message: string): void {
-    this.eventBus.publish(
-      new SendSlackMessageEvent(
-        '#error-alerts',
-        `🚨 Error in PaymentCompletedListener: ${message}`,
-      ),
-    );
+    this.kafkaClient.emit('slack.notification', {
+      channel: '#error-alerts',
+      text: `🚨 Error in PaymentCompletedListener: ${message}`,
+    });
   }
 
   private async handleFailedExternalSave(event: PaymentCompletedEvent) {
