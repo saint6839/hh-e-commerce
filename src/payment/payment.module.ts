@@ -4,6 +4,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 import { LoggerService } from 'src/common/logger/logger.service';
+import { OutboxModule } from 'src/common/outbox/outbox.module';
 import { OrderModule } from 'src/order/order.module';
 import { ProductModule } from 'src/product/product.module';
 import { UserModule } from 'src/user/user.module';
@@ -26,6 +27,7 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
     TypeOrmModule.forFeature([PaymentEntity]),
     ProductModule,
     UserModule,
+    OutboxModule,
     forwardRef(() => OrderModule),
     CqrsModule,
     ClientsModule.register([

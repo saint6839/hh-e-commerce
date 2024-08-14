@@ -1,6 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  IOutboxRepository,
+  IOutboxRepositoryToken,
+} from 'src/common/outbox/domain/interface/outbox.repository.interface';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 import {
@@ -29,6 +33,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
   let orderItemRepository: Repository<OrderItemEntity>;
   let userRepository: Repository<UserEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
+  let outboxRepository: IOutboxRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -48,6 +53,9 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     productOptionRepository = moduleFixture.get(
       getRepositoryToken(ProductOptionEntity),
     );
+    outboxRepository = moduleFixture.get<IOutboxRepository>(
+      IOutboxRepositoryToken,
+    );
   });
 
   afterAll(async () => {
@@ -60,6 +68,10 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await orderItemRepository.clear();
     await userRepository.clear();
     await productOptionRepository.clear();
+    const outboxEvents = await outboxRepository.findUnpublished();
+    for (const event of outboxEvents) {
+      await outboxRepository.markAsPublished(event.id);
+    }
   });
 
   it('결제가 성공적으로 완료되는지 테스트', async () => {
@@ -131,6 +143,13 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     });
     expect(updatedUser).toBeDefined();
     expect(updatedUser?.balance).toBe(5000);
+
+    const outboxEvents = await outboxRepository.findUnpublished();
+    const paymentCompletedEvent = outboxEvents.find(
+      (event) => event.eventType === 'payment.completed',
+    );
+    expect(paymentCompletedEvent).toBeDefined();
+    expect(paymentCompletedEvent?.eventType).toBe('payment.completed');
   });
 
   it('잔액이 부족한 경우 예외를 발생시키는지 테스트', async () => {
@@ -197,6 +216,9 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     });
     expect(unchangedUser).toBeDefined();
     expect(unchangedUser?.balance).toBe(1000);
+
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(0);
   });
 
   it('존재하지 않는 결제에 대해 예외를 발생시키는지 테스트', async () => {
@@ -212,6 +234,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await expect(
       completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
     ).rejects.toThrow(NOT_FOUND_PAYMENT_ERROR);
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(0);
   });
 
   it('존재하지 않는 주문에 대해 예외를 발생시키는지 테스트', async () => {
@@ -234,5 +258,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await expect(
       completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
     ).rejects.toThrow(NOT_FOUND_ORDER_ERROR);
+
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(0);
   });
 });

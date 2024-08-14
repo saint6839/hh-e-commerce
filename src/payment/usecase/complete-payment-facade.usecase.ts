@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { LoggerService } from 'src/common/logger/logger.service';
+import {
+  IOutboxRepository,
+  IOutboxRepositoryToken,
+} from 'src/common/outbox/domain/interface/outbox.repository.interface';
+import { OutboxEntity } from 'src/common/outbox/repository/entity/outbox.entity';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import {
   IOrderItemRepository,
@@ -51,6 +56,8 @@ export class CompletePaymentFacadeUseCase
     private readonly orderRepository: IOrderRepository,
     @Inject(IOrderItemRepositoryToken)
     private readonly orderItemRepository: IOrderItemRepository,
+    @Inject(IOutboxRepositoryToken)
+    private readonly outboxRepository: IOutboxRepository,
     @Inject(ICompletePaymentUseCaseToken)
     private readonly completePaymentUseCase: ICompletePaymentUseCase,
     @Inject(ISpendUserBalanceUsecaseToken)
@@ -94,6 +101,7 @@ export class CompletePaymentFacadeUseCase
               amount: paymentResult.amount,
               status: paymentResult.status,
             });
+            await this.savePaymentCompletedOutbox(paymentResult, orderEntity);
 
             const orderItemEntities =
               await this.orderItemRepository.findByOrderId(
@@ -114,6 +122,10 @@ export class CompletePaymentFacadeUseCase
                   ),
               ),
             });
+            await this.saveProductPopularAccumulateOutbox(
+              orderEntity,
+              orderItemEntities,
+            );
           }
 
           return paymentResult;
@@ -125,6 +137,47 @@ export class CompletePaymentFacadeUseCase
       await this.handleFailure(paymentEntity, orderEntity, dto, error);
       throw error;
     }
+  }
+
+  private async savePaymentCompletedOutbox(
+    paymentResult: PaymentResultDto,
+    orderEntity: OrderEntity,
+  ) {
+    await this.outboxRepository.save({
+      aggregateType: 'Payment',
+      aggregateId: paymentResult.paymentId.toString(),
+      eventType: 'payment.completed',
+      payload: JSON.stringify({
+        paymentId: paymentResult.paymentId,
+        orderId: orderEntity.id,
+        userId: paymentResult.userId,
+        amount: paymentResult.amount,
+        status: paymentResult.status,
+      }),
+    } as OutboxEntity);
+  }
+
+  private async saveProductPopularAccumulateOutbox(
+    orderEntity: OrderEntity,
+    orderItemEntities: OrderItemEntity[],
+  ) {
+    await this.outboxRepository.save({
+      aggregateType: 'Product',
+      aggregateId: orderEntity.id.toString(),
+      eventType: 'product.popular.accumulate',
+      payload: JSON.stringify({
+        orderItems: orderItemEntities.map(
+          (orderItem: OrderItemEntity) =>
+            new OrderItemDto(
+              orderItem.id,
+              orderItem.orderId,
+              orderItem.productOptionId,
+              orderItem.quantity,
+              orderItem.totalPriceAtOrder,
+            ),
+        ),
+      }),
+    } as OutboxEntity);
   }
 
   private async handleFailure(

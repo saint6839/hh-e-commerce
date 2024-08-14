@@ -1,6 +1,6 @@
-import { EventBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerService } from 'src/common/logger/logger.service';
+import { IOutboxRepositoryToken } from 'src/common/outbox/domain/interface/outbox.repository.interface';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import { IOrderItemRepositoryToken } from 'src/order/domain/interface/repository/order-item.repository.interface';
 import { IOrderRepositoryToken } from 'src/order/domain/interface/repository/order.repository.interface';
@@ -8,11 +8,9 @@ import { NOT_FOUND_ORDER_ERROR } from 'src/order/repository/entity/order.entity'
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 import { IPaymentRepositoryToken } from 'src/payment/domain/interface/repository/payment.repository.interface';
 import { ICompletePaymentUseCaseToken } from 'src/payment/domain/interface/usecase/complete-payment.usecase.interface';
-import { PaymentCompletedEvent } from 'src/payment/event/payment-completed.event';
 import { NOT_FOUND_PAYMENT_ERROR } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
-import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import { ISpendUserBalanceUsecaseToken } from 'src/user/domain/interface/usecase/spend-user-balance.usecase.interface';
 import { DataSource } from 'typeorm';
 
@@ -21,12 +19,12 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
   let mockPaymentRepository: any;
   let mockOrderRepository: any;
   let mockOrderItemRepository: any;
+  let mockOutboxRepository: any;
   let mockCompletePaymentUseCase: any;
   let mockSpendUserBalanceUsecase: any;
-  let mockAccumulatePopularProductsSoldUseCase: any;
   let mockDataSource: any;
   let mockLoggerService: any;
-  let mockEventBus: any;
+  let mockKafkaClient: any;
 
   beforeEach(async () => {
     mockPaymentRepository = {
@@ -40,13 +38,13 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
     mockOrderItemRepository = {
       findByOrderId: jest.fn(),
     };
+    mockOutboxRepository = {
+      save: jest.fn(),
+    };
     mockCompletePaymentUseCase = {
       execute: jest.fn(),
     };
     mockSpendUserBalanceUsecase = {
-      execute: jest.fn(),
-    };
-    mockAccumulatePopularProductsSoldUseCase = {
       execute: jest.fn(),
     };
     mockDataSource = {
@@ -56,8 +54,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       log: jest.fn(),
       warn: jest.fn(),
     };
-    mockEventBus = {
-      publish: jest.fn(),
+    mockKafkaClient = {
+      emit: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -69,6 +67,7 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
           provide: IOrderItemRepositoryToken,
           useValue: mockOrderItemRepository,
         },
+        { provide: IOutboxRepositoryToken, useValue: mockOutboxRepository },
         {
           provide: ICompletePaymentUseCaseToken,
           useValue: mockCompletePaymentUseCase,
@@ -79,7 +78,7 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         },
         { provide: DataSource, useValue: mockDataSource },
         { provide: LoggerService, useValue: mockLoggerService },
-        { provide: EventBus, useValue: mockEventBus },
+        { provide: 'KAFKA_CLIENT', useValue: mockKafkaClient },
       ],
     }).compile();
 
@@ -130,9 +129,6 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       id: 1,
       balance: 9000,
     });
-    mockAccumulatePopularProductsSoldUseCase.execute.mockResolvedValue(
-      undefined,
-    );
 
     const result = await completePaymentFacadeUseCase.execute(dto);
 
@@ -143,13 +139,16 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         amount: mockPaymentResult.amount,
       }),
     );
-    expect(mockEventBus.publish).toHaveBeenCalledTimes(2);
-    expect(mockEventBus.publish).toHaveBeenCalledWith(
-      expect.any(PaymentCompletedEvent),
+    expect(mockKafkaClient.emit).toHaveBeenCalledTimes(2);
+    expect(mockKafkaClient.emit).toHaveBeenCalledWith(
+      'payment.completed',
+      expect.any(Object),
     );
-    expect(mockEventBus.publish).toHaveBeenCalledWith(
-      expect.any(AccumulatePopularProductsSoldEvent),
+    expect(mockKafkaClient.emit).toHaveBeenCalledWith(
+      'product.popular.accumulate',
+      expect.any(Object),
     );
+    expect(mockOutboxRepository.save).toHaveBeenCalledTimes(2);
   });
 
   it('결제 실패 시 이벤트가 발행되지 않는지 테스트', async () => {
@@ -173,7 +172,6 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     mockPaymentRepository.findById.mockResolvedValue(mockPayment);
     mockOrderRepository.findById.mockResolvedValue(mockOrder);
-    mockOrderItemRepository.findByOrderId.mockResolvedValue([]);
     mockCompletePaymentUseCase.execute.mockResolvedValue(mockPaymentResult);
     mockSpendUserBalanceUsecase.execute.mockResolvedValue({
       id: 1,
@@ -184,7 +182,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     expect(result).toEqual(mockPaymentResult);
     expect(mockSpendUserBalanceUsecase.execute).toHaveBeenCalled();
-    expect(mockEventBus.publish).not.toHaveBeenCalled();
+    expect(mockKafkaClient.emit).not.toHaveBeenCalled();
+    expect(mockOutboxRepository.save).not.toHaveBeenCalled();
   });
 
   it('잔액 차감 실패 시 예외를 throw하고 결제 상태를 FAILED로 변경하는지 테스트', async () => {
@@ -201,7 +200,6 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     mockPaymentRepository.findById.mockResolvedValue(mockPayment);
     mockOrderRepository.findById.mockResolvedValue(mockOrder);
-    mockOrderItemRepository.findByOrderId.mockResolvedValue([]);
     mockSpendUserBalanceUsecase.execute.mockRejectedValue(
       new Error('잔액 부족'),
     );
@@ -216,7 +214,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       1,
       OrderStatus.CANCELLED,
     );
-    expect(mockEventBus.publish).not.toHaveBeenCalled();
+    expect(mockKafkaClient.emit).not.toHaveBeenCalled();
+    expect(mockOutboxRepository.save).not.toHaveBeenCalled();
   });
 
   it('결제 엔티티를 찾을 수 없을 때 예외를 throw하는지 테스트', async () => {

@@ -3,6 +3,9 @@ import { APP_PIPE } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerService } from 'src/common/logger/logger.service';
+import { IOutboxRepositoryToken } from 'src/common/outbox/domain/interface/outbox.repository.interface';
+import { OutboxEntity } from 'src/common/outbox/repository/entity/outbox.entity';
+import { OutboxRepository } from 'src/common/outbox/repository/repository/outbox.repository';
 import { RedisModule } from 'src/common/redis/redis.module';
 import { CartModule } from '../../src/cart/cart.module';
 import { OrderModule } from '../../src/order/order.module';
@@ -23,6 +26,7 @@ export async function setupTestingModule(): Promise<TestingModule> {
         entities: [
           __dirname + '/../../src/**/*.entity{.ts,.js}',
           __dirname + '/../../dist/**/*.entity{.ts,.js}',
+          OutboxEntity,
         ],
         synchronize: true,
         dropSchema: true,
@@ -30,6 +34,7 @@ export async function setupTestingModule(): Promise<TestingModule> {
         autoLoadEntities: true,
         driver: require('mysql2'),
       }),
+      TypeOrmModule.forFeature([OutboxEntity]),
       UserModule,
       ProductModule,
       OrderModule,
@@ -43,10 +48,8 @@ export async function setupTestingModule(): Promise<TestingModule> {
         useClass: ValidationPipe,
       },
       {
-        provide: 'KAFKA_CLIENT',
-        useFactory: () => ({
-          emit: jest.fn(),
-        }),
+        provide: IOutboxRepositoryToken,
+        useClass: OutboxRepository,
       },
       LoggerService,
     ],
