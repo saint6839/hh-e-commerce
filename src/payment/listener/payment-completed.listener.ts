@@ -2,6 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 import { LoggerService } from 'src/common/logger/logger.service';
+import {
+  IOutboxRepository,
+  IOutboxRepositoryToken,
+} from 'src/common/outbox/domain/interface/outbox.repository.interface';
 import { PaymentCompletedEvent } from '../event/payment-completed.event';
 
 @Injectable()
@@ -13,6 +17,8 @@ export class PaymentCompletedListener {
     private readonly loggerService: LoggerService,
     @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
     private readonly externalDataPlatformService: ExternalDataPlatformService,
+    @Inject(IOutboxRepositoryToken)
+    private readonly outboxRepository: IOutboxRepository,
   ) {}
 
   @MessagePattern('payment.completed')
@@ -26,6 +32,13 @@ export class PaymentCompletedListener {
           amount: event.amount,
           status: event.status,
         });
+
+        const outbox = await this.outboxRepository.findByEventTypeAndPayload(
+          'payment.completed',
+          JSON.stringify(event),
+        );
+        if (outbox) await this.outboxRepository.markAsPublished(outbox.id);
+
         this.loggerService.log(
           `주문 정보 외부 저장 성공: OrderID=${event.orderId}`,
           PaymentCompletedListener.name,
@@ -47,7 +60,6 @@ export class PaymentCompletedListener {
     const errorMessage = `총 ${this.maxRetries}번의 주문 정보 외부 저장 재시도를 실패하였습니다. OrderID=${event.orderId}`;
     this.loggerService.error(errorMessage, PaymentCompletedListener.name);
     this.sendSlackNotification(errorMessage);
-    await this.handleFailedExternalSave(event);
   }
 
   private delay(ms: number): Promise<void> {
@@ -59,14 +71,5 @@ export class PaymentCompletedListener {
       channel: '#error-alerts',
       text: `🚨 Error in PaymentCompletedListener: ${message}`,
     });
-  }
-
-  private async handleFailedExternalSave(event: PaymentCompletedEvent) {
-    this.loggerService.warn(
-      `주문 정보 외부 저장 실패 처리 시작: OrderID=${event.orderId}`,
-      PaymentCompletedListener.name,
-    );
-    // 여기에 추가적인 실패 처리 로직을 구현할 수 있습니다.
-    // 예: 데이터베이스에 실패한 이벤트 저장, 다른 서비스에 알림 등
   }
 }

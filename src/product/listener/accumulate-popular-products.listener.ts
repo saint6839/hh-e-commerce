@@ -1,6 +1,10 @@
 import { Inject, Logger } from '@nestjs/common';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import {
+  IOutboxRepository,
+  IOutboxRepositoryToken,
+} from 'src/common/outbox/domain/interface/outbox.repository.interface';
+import {
   IAccumulatePopularProductsSoldUseCase,
   IAccumulatePopularProductsSoldUseCaseToken,
 } from '../domain/interface/usecase/accumulate-popular-proudcts-sold.usecase.interface';
@@ -18,6 +22,8 @@ export class AccumulatePopularProductsSoldListener {
     @Inject(IAccumulatePopularProductsSoldUseCaseToken)
     private readonly accumulatePopularProductsSoldUseCase: IAccumulatePopularProductsSoldUseCase,
     @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
+    @Inject(IOutboxRepositoryToken)
+    private readonly outboxRepository: IOutboxRepository,
   ) {}
 
   @MessagePattern('product.popular.accumulate')
@@ -28,11 +34,24 @@ export class AccumulatePopularProductsSoldListener {
         await this.accumulatePopularProductsSoldUseCase.execute(
           new AccumulatePopularProductsSoldDto(event.orderItems),
         );
+
+        const outbox = await this.outboxRepository.findByEventTypeAndPayload(
+          'product.popular.accumulate',
+          JSON.stringify(event),
+        );
+        if (outbox) {
+          await this.outboxRepository.markAsPublished(outbox.id);
+          this.logger.log(`인기 상품 판매량 누적 성공: OutboxID=${outbox.id}`);
+        } else {
+          this.logger.warn(
+            `Outbox 이벤트를 찾을 수 없습니다: ${JSON.stringify(event)}`,
+          );
+        }
         return;
       } catch (error) {
         retries++;
         this.logger.warn(
-          `인기 상품 판매량 누적 실패 ${JSON.stringify(event.orderItems)}. 재시도 ${retries}/${this.maxRetries}. 에러: ${error.message}`,
+          `인기 상품 판매량 누적 실패. 재시도 ${retries}/${this.maxRetries}. 에러: ${error.message}`,
         );
         if (retries < this.maxRetries) {
           await this.delay(this.retryDelay * retries);
@@ -40,23 +59,29 @@ export class AccumulatePopularProductsSoldListener {
       }
     }
 
-    const errorMessage = ` 총 ${this.maxRetries}번의 인기상품 누적 재시도를 실패하였습니다. order items: ${JSON.stringify(event.orderItems)}`;
+    await this.handleMaxRetriesReached(event);
+  }
+
+  private async handleMaxRetriesReached(
+    event: AccumulatePopularProductsSoldEvent,
+  ) {
+    const errorMessage = `총 ${this.maxRetries}번의 인기상품 누적 재시도를 실패하였습니다. order items: ${JSON.stringify(event.orderItems)}`;
     this.logger.error(errorMessage);
-    this.sendSlackNotification(errorMessage);
+    await this.sendSlackNotification(errorMessage);
   }
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  /**
-   * 에러 슬랙 알림 전송 이벤트 발행
-   * @param message
-   */
-  private sendSlackNotification(message: string): void {
-    this.kafkaClient.emit('slack.notification', {
-      channel: '#error-alerts',
-      text: `🚨 Error in AccumulatePopularProductsSoldListener: ${message}`,
-    });
+  private async sendSlackNotification(message: string): Promise<void> {
+    try {
+      this.kafkaClient.emit('slack.notification', {
+        channel: '#error-alerts',
+        text: `🚨 Error in AccumulatePopularProductsSoldListener: ${message}`,
+      });
+    } catch (error) {
+      this.logger.error(`Slack 알림 전송 실패: ${error.message}`);
+    }
   }
 }

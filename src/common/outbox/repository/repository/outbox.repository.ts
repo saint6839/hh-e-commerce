@@ -10,6 +10,14 @@ export class OutboxRepository implements IOutboxRepository {
     @InjectRepository(OutboxEntity)
     private readonly outboxRepository: Repository<OutboxEntity>,
   ) {}
+  async findByEventTypeAndPayload(
+    eventType: string,
+    payload: string,
+  ): Promise<OutboxEntity | null> {
+    return this.outboxRepository.findOne({
+      where: { eventType, payload },
+    });
+  }
 
   async save(outboxEntity: OutboxEntity): Promise<OutboxEntity> {
     return this.outboxRepository.save(outboxEntity);
