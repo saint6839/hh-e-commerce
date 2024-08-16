@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { CartModule } from './cart/cart.module';
 import { LoggerService } from './common/logger/logger.service';
+import { SlackModule } from './common/slack/slack.module';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
 import { ProductModule } from './product/product.module';
@@ -41,6 +42,22 @@ import { UserModule } from './user/user.module';
         }),
         inject: [ConfigService],
       },
+      {
+        name: 'NOTIFICATION_SERVICE',
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'notification-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
+            consumer: {
+              groupId: 'notification-consumer',
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
     ]),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
@@ -70,6 +87,7 @@ import { UserModule } from './user/user.module';
     OrderModule,
     CartModule,
     PaymentModule,
+    SlackModule,
     EventEmitterModule.forRoot(),
   ],
   exports: [LoggerService, ClientsModule],

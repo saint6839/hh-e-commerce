@@ -60,7 +60,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
 
   afterAll(async () => {
     await app.close();
-  });
+  }, 30000);
 
   afterEach(async () => {
     await paymentRepository.clear();
