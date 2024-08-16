@@ -35,7 +35,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
   let userRepository: Repository<UserEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
   let outboxRepository: IOutboxRepository;
-  let kafkaClient: ClientKafka;
+  let paymentClient: ClientKafka;
+  let productClient: ClientKafka;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -58,13 +59,15 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     outboxRepository = moduleFixture.get<IOutboxRepository>(
       IOutboxRepositoryToken,
     );
-    kafkaClient = moduleFixture.get<ClientKafka>('KAFKA_CLIENT');
+    paymentClient = moduleFixture.get<ClientKafka>('PAYMENT_SERVICE');
+    productClient = moduleFixture.get<ClientKafka>('PRODUCT_SERVICE');
   });
 
   afterAll(async () => {
     await app.close();
-    await kafkaClient.close();
-  });
+    await paymentClient.close();
+    await productClient.close();
+  }, 30000);
 
   afterEach(async () => {
     await paymentRepository.clear();
@@ -121,7 +124,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       'test_tid',
     );
 
-    const emitSpy = jest.spyOn(kafkaClient, 'emit');
+    const paymentEmitSpy = jest.spyOn(paymentClient, 'emit');
+    const productEmitSpy = jest.spyOn(productClient, 'emit');
 
     // when
     const result = await completePaymentFacadeUseCase.execute(
@@ -157,8 +161,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     const paymentCompletedEvent = outboxEvents.find(
       (event) => event.eventType === 'payment.completed',
     );
-
-    console.log('이거다!!' + paymentCompletedEvent?.published);
+    // 이벤트가 처리되는 시간 고려하여 잠깐 대기
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     expect(paymentCompletedEvent).toBeDefined();
 
     const paymentCompletedPayload =
@@ -195,16 +199,22 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       ]),
     });
 
-    expect(emitSpy).toHaveBeenCalledTimes(2);
-    expect(emitSpy).toHaveBeenCalledWith(
+    // 이벤트 발행 호출 확인
+    expect(paymentEmitSpy).toHaveBeenCalledTimes(1);
+    expect(paymentEmitSpy).toHaveBeenCalledWith(
       'payment.completed',
       expect.any(Object),
     );
-    expect(emitSpy).toHaveBeenCalledWith(
+    expect(productEmitSpy).toHaveBeenCalledTimes(1);
+    expect(productEmitSpy).toHaveBeenCalledWith(
       'product.popular.accumulate',
       expect.any(Object),
     );
-  });
+
+    // 이벤트 성공적으로 소비되어 outbox 상태 값 바뀌었는지 확인
+    const updatedOutboxEvents = await outboxRepository.findUnpublished();
+    expect(updatedOutboxEvents).toHaveLength(0);
+  }, 10000);
 
   it('잔액이 부족한 경우 예외를 발생시키고 이벤트가 발행되지 않는지 테스트', async () => {
     // given
@@ -233,7 +243,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       'test_tid',
     );
 
-    const emitSpy = jest.spyOn(kafkaClient, 'emit');
+    const emitSpy = jest.spyOn(paymentClient, 'emit');
 
     // when & then
     await expect(

@@ -1,5 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerService } from 'src/common/logger/logger.service';
@@ -16,6 +18,10 @@ import { UserModule } from '../../src/user/user.module';
 export async function setupTestingModule(): Promise<TestingModule> {
   return Test.createTestingModule({
     imports: [
+      ConfigModule.forRoot({
+        isGlobal: true,
+        envFilePath: '.env.test',
+      }),
       TypeOrmModule.forRoot({
         type: 'mysql',
         host: process.env.DB_HOST || 'localhost',
@@ -35,6 +41,40 @@ export async function setupTestingModule(): Promise<TestingModule> {
         driver: require('mysql2'),
       }),
       TypeOrmModule.forFeature([OutboxEntity]),
+      ClientsModule.registerAsync([
+        {
+          name: 'PAYMENT_SERVICE',
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: 'payment-test-client',
+                brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+              },
+              consumer: {
+                groupId: 'payment-test-consumer-group',
+              },
+            },
+          }),
+          inject: [ConfigService],
+        },
+        {
+          name: 'PRODUCT_SERVICE',
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: 'product-test-client',
+                brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+              },
+              consumer: {
+                groupId: 'product-test-consumer-group',
+              },
+            },
+          }),
+          inject: [ConfigService],
+        },
+      ]),
       UserModule,
       ProductModule,
       OrderModule,
@@ -59,5 +99,9 @@ export async function setupTestingModule(): Promise<TestingModule> {
 export async function teardownTestingModule(module: TestingModule) {
   const redisClient = module.get('REDIS_CLIENT');
   await redisClient.quit();
+  const paymentClient = module.get('PAYMENT_SERVICE');
+  await paymentClient.close();
+  const productClient = module.get('PRODUCT_SERVICE');
+  await productClient.close();
   await module.close();
 }

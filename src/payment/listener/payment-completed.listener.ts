@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { ClientKafka, EventPattern, Payload } from '@nestjs/microservices';
 import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 import { LoggerService } from 'src/common/logger/logger.service';
 import {
@@ -15,14 +15,14 @@ export class PaymentCompletedListener {
 
   constructor(
     private readonly loggerService: LoggerService,
-    @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
+    @Inject('PAYMENT_SERVICE') private readonly kafkaClient: ClientKafka,
     private readonly externalDataPlatformService: ExternalDataPlatformService,
     @Inject(IOutboxRepositoryToken)
     private readonly outboxRepository: IOutboxRepository,
   ) {}
 
-  @MessagePattern('payment.completed')
-  async handle(event: PaymentCompletedEvent) {
+  @EventPattern('payment.completed')
+  async handle(@Payload() event: PaymentCompletedEvent) {
     let retries = 0;
     while (retries < this.maxRetries) {
       try {

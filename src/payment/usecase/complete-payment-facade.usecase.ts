@@ -64,7 +64,8 @@ export class CompletePaymentFacadeUseCase
     private readonly spendUserBalanceUsecase: ISpendUserBalanceUsecase,
     private readonly dataSource: DataSource,
     private readonly loggerService: LoggerService,
-    @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
+    @Inject('PAYMENT_SERVICE') private readonly paymentClient: ClientKafka,
+    @Inject('PRODUCT_SERVICE') private readonly productClient: ClientKafka,
   ) {}
 
   async execute(dto: CompletePaymentFacadeDto): Promise<PaymentResultDto> {
@@ -94,7 +95,7 @@ export class CompletePaymentFacadeUseCase
 
           if (paymentResult.status === PaymentStatus.COMPLETED) {
             // 외부 플랫폼에 결제 정보 저장하는 이벤트 발행
-            this.kafkaClient.emit('payment.completed', {
+            this.paymentClient.emit('payment.completed', {
               paymentId: paymentResult.paymentId,
               orderId: orderEntity.id,
               userId: paymentResult.userId,
@@ -110,7 +111,7 @@ export class CompletePaymentFacadeUseCase
               );
 
             // 인기 상품 판매량 누적 이벤트 발행
-            this.kafkaClient.emit('product.popular.accumulate', {
+            this.productClient.emit('product.popular.accumulate', {
               orderItems: orderItemEntities.map(
                 (orderItem: OrderItemEntity) =>
                   new OrderItemDto(

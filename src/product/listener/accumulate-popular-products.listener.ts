@@ -1,5 +1,5 @@
-import { Inject, Logger } from '@nestjs/common';
-import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ClientKafka, EventPattern, Payload } from '@nestjs/microservices';
 import {
   IOutboxRepository,
   IOutboxRepositoryToken,
@@ -11,6 +11,7 @@ import {
 import { AccumulatePopularProductsSoldEvent } from '../event/accumulate-popular-products-sold.event';
 import { AccumulatePopularProductsSoldDto } from '../presentation/dto/request/accumulate-popular-products-sold.dto';
 
+@Injectable()
 export class AccumulatePopularProductsSoldListener {
   private readonly logger = new Logger(
     AccumulatePopularProductsSoldListener.name,
@@ -21,13 +22,13 @@ export class AccumulatePopularProductsSoldListener {
   constructor(
     @Inject(IAccumulatePopularProductsSoldUseCaseToken)
     private readonly accumulatePopularProductsSoldUseCase: IAccumulatePopularProductsSoldUseCase,
-    @Inject('KAFKA_CLIENT') private readonly kafkaClient: ClientKafka,
+    @Inject('PRODUCT_SERVICE') private readonly kafkaClient: ClientKafka,
     @Inject(IOutboxRepositoryToken)
     private readonly outboxRepository: IOutboxRepository,
   ) {}
 
-  @MessagePattern('product.popular.accumulate')
-  async handle(event: AccumulatePopularProductsSoldEvent) {
+  @EventPattern('product.popular.accumulate')
+  async handle(@Payload() event: AccumulatePopularProductsSoldEvent) {
     let retries = 0;
     while (retries < this.maxRetries) {
       try {

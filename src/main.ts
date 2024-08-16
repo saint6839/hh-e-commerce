@@ -31,20 +31,29 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   const configService = app.get(ConfigService);
-  const kafkaConfig: MicroserviceOptions = {
+  app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: {
-        clientId: configService.get('KAFKA_CLIENT_ID', 'my-app'),
         brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
       },
       consumer: {
-        groupId: configService.get('KAFKA_CONSUMER_GROUP', 'my-consumer-group'),
+        groupId: 'payment-consumer',
       },
     },
-  };
+  });
 
-  app.connectMicroservice<MicroserviceOptions>(kafkaConfig);
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+      },
+      consumer: {
+        groupId: 'product-consumer',
+      },
+    },
+  });
   await app.startAllMicroservices();
   await app.listen(3000);
 }

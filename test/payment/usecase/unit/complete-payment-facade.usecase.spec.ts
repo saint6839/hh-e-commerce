@@ -24,7 +24,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
   let mockSpendUserBalanceUsecase: any;
   let mockDataSource: any;
   let mockLoggerService: any;
-  let mockKafkaClient: any;
+  let mockPaymentClient: any;
+  let mockProductClient: any;
 
   beforeEach(async () => {
     mockPaymentRepository = {
@@ -54,7 +55,10 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       log: jest.fn(),
       warn: jest.fn(),
     };
-    mockKafkaClient = {
+    mockPaymentClient = {
+      emit: jest.fn(),
+    };
+    mockProductClient = {
       emit: jest.fn(),
     };
 
@@ -78,7 +82,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         },
         { provide: DataSource, useValue: mockDataSource },
         { provide: LoggerService, useValue: mockLoggerService },
-        { provide: 'KAFKA_CLIENT', useValue: mockKafkaClient },
+        { provide: 'PAYMENT_SERVICE', useValue: mockPaymentClient },
+        { provide: 'PRODUCT_SERVICE', useValue: mockProductClient },
       ],
     }).compile();
 
@@ -139,12 +144,11 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
         amount: mockPaymentResult.amount,
       }),
     );
-    expect(mockKafkaClient.emit).toHaveBeenCalledTimes(2);
-    expect(mockKafkaClient.emit).toHaveBeenCalledWith(
+    expect(mockPaymentClient.emit).toHaveBeenCalledWith(
       'payment.completed',
       expect.any(Object),
     );
-    expect(mockKafkaClient.emit).toHaveBeenCalledWith(
+    expect(mockProductClient.emit).toHaveBeenCalledWith(
       'product.popular.accumulate',
       expect.any(Object),
     );
@@ -182,7 +186,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
 
     expect(result).toEqual(mockPaymentResult);
     expect(mockSpendUserBalanceUsecase.execute).toHaveBeenCalled();
-    expect(mockKafkaClient.emit).not.toHaveBeenCalled();
+    expect(mockPaymentClient.emit).not.toHaveBeenCalled();
+    expect(mockProductClient.emit).not.toHaveBeenCalled();
     expect(mockOutboxRepository.save).not.toHaveBeenCalled();
   });
 
@@ -214,7 +219,8 @@ describe('CompletePaymentFacadeUseCase Unit Test', () => {
       1,
       OrderStatus.CANCELLED,
     );
-    expect(mockKafkaClient.emit).not.toHaveBeenCalled();
+    expect(mockPaymentClient.emit).not.toHaveBeenCalled();
+    expect(mockProductClient.emit).not.toHaveBeenCalled();
     expect(mockOutboxRepository.save).not.toHaveBeenCalled();
   });
 

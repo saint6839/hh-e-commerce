@@ -21,12 +21,17 @@ export class OutboxProcessorService implements OnModuleInit {
     this.processOutbox();
   }
 
-  @Interval(5000)
+  @Interval(3000)
   async processOutbox() {
     const unpublishedEvents = await this.outboxRepository.findUnpublished();
     for (const event of unpublishedEvents) {
       try {
-        await this.kafkaClient.emit(event.eventType, JSON.parse(event.payload));
+        const payload =
+          typeof event.payload === 'string'
+            ? JSON.parse(event.payload)
+            : event.payload;
+
+        await this.kafkaClient.emit(event.eventType, payload);
         await this.outboxRepository.markAsPublished(event.id);
         this.logger.log(`이벤트 발행 성공: ${event.id}`);
       } catch (error) {

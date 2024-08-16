@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ClientsModule } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { CartModule } from './cart/cart.module';
-import { getKafkaConfig } from './common/kafka/kafka.config';
 import { LoggerService } from './common/logger/logger.service';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
@@ -15,7 +14,38 @@ import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    ClientsModule.registerAsync(getKafkaConfig()),
+    ClientsModule.registerAsync([
+      {
+        name: 'PAYMENT_SERVICE',
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'payment-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+      {
+        name: 'PRODUCT_SERVICE',
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'product-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
+    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -31,7 +61,7 @@ import { UserModule } from './user/user.module';
         database: configService.get('DB_DATABASE', 'h99plus'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') !== 'production',
-        logging: configService.get('NODE_ENV') !== 'production',
+        logging: false,
       }),
       inject: [ConfigService],
     }),

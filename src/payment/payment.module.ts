@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -30,19 +31,36 @@ import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
     OutboxModule,
     forwardRef(() => OrderModule),
     CqrsModule,
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
-        name: 'KAFKA_CLIENT',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'payment',
-            brokers: ['localhost:29092'],
+        name: 'PAYMENT_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'payment-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
           },
-          consumer: {
-            groupId: 'payment-consumer',
+        }),
+        inject: [ConfigService],
+      },
+    ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'PRODUCT_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'product-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerService } from 'src/common/logger/logger.service';
+import { OutboxModule } from 'src/common/outbox/outbox.module';
 import { RedisLockService } from 'src/common/redis/redis-lock.service';
 import { RedisModule } from 'src/common/redis/redis.module';
 import { IDailyPopularProductRepositoryToken } from './domain/interface/repository/daily-popular-product.repository.interface';
@@ -37,19 +39,21 @@ import { ReadProductUseCase } from './usecase/read-product.usecase';
     ]),
     RedisModule,
     CqrsModule,
-    ClientsModule.register([
+    OutboxModule,
+    ClientsModule.registerAsync([
       {
-        name: 'KAFKA_CLIENT',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'product',
-            brokers: ['localhost:29092'],
+        name: 'PRODUCT_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'product-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
           },
-          consumer: {
-            groupId: 'product-consumer',
-          },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],
