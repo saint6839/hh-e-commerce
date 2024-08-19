@@ -1,7 +1,11 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 import { LoggerService } from 'src/common/logger/logger.service';
+import { OutboxModule } from 'src/common/outbox/outbox.module';
 import { OrderModule } from 'src/order/order.module';
 import { ProductModule } from 'src/product/product.module';
 import { UserModule } from 'src/user/user.module';
@@ -18,15 +22,47 @@ import { PaymentController } from './presentation/controller/payment.controller'
 import { CompletePaymentFacadeUseCase } from './usecase/complete-payment-facade.usecase';
 import { CompletePaymentUseCase } from './usecase/complete-payment.usecase';
 import { CreatePaymentUseCase } from './usecase/create-payment.usecase';
-import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([PaymentEntity]),
     ProductModule,
     UserModule,
+    OutboxModule,
     forwardRef(() => OrderModule),
     CqrsModule,
+    ClientsModule.registerAsync([
+      {
+        name: 'PAYMENT_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'payment-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'PRODUCT_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: 'product-service',
+              brokers: [configService.get('KAFKA_BROKER', 'localhost:29092')],
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
   ],
   exports: [ICreatePaymentUseCaseToken],
   controllers: [PaymentController],

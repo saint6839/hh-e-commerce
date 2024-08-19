@@ -1,25 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { EventBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientKafka, EventPattern, Payload } from '@nestjs/microservices';
 import { ExternalDataPlatformService } from 'src/common/data-platform/external-data-platform.service';
 import { LoggerService } from 'src/common/logger/logger.service';
-import { SendSlackMessageEvent } from 'src/common/slack/event/send-slack.event';
+import {
+  IOutboxRepository,
+  IOutboxRepositoryToken,
+} from 'src/common/outbox/domain/interface/outbox.repository.interface';
 import { PaymentCompletedEvent } from '../event/payment-completed.event';
 
 @Injectable()
-@EventsHandler(PaymentCompletedEvent)
-export class PaymentCompletedListener
-  implements IEventHandler<PaymentCompletedEvent>
-{
+export class PaymentCompletedListener {
   private readonly maxRetries = 3;
   private readonly retryDelay = 1000;
 
   constructor(
     private readonly loggerService: LoggerService,
-    private readonly eventBus: EventBus,
+    @Inject('PAYMENT_SERVICE') private readonly kafkaClient: ClientKafka,
     private readonly externalDataPlatformService: ExternalDataPlatformService,
+    @Inject(IOutboxRepositoryToken)
+    private readonly outboxRepository: IOutboxRepository,
   ) {}
 
-  async handle(event: PaymentCompletedEvent) {
+  @EventPattern('payment.completed')
+  async handle(@Payload() event: PaymentCompletedEvent) {
     let retries = 0;
     while (retries < this.maxRetries) {
       try {
@@ -29,6 +32,13 @@ export class PaymentCompletedListener
           amount: event.amount,
           status: event.status,
         });
+
+        const outbox = await this.outboxRepository.findByEventTypeAndPayload(
+          'payment.completed',
+          JSON.stringify(event),
+        );
+        if (outbox) await this.outboxRepository.markAsPublished(outbox.id);
+
         this.loggerService.log(
           `주문 정보 외부 저장 성공: OrderID=${event.orderId}`,
           PaymentCompletedListener.name,
@@ -50,7 +60,6 @@ export class PaymentCompletedListener
     const errorMessage = `총 ${this.maxRetries}번의 주문 정보 외부 저장 재시도를 실패하였습니다. OrderID=${event.orderId}`;
     this.loggerService.error(errorMessage, PaymentCompletedListener.name);
     this.sendSlackNotification(errorMessage);
-    await this.handleFailedExternalSave(event);
   }
 
   private delay(ms: number): Promise<void> {
@@ -58,20 +67,9 @@ export class PaymentCompletedListener
   }
 
   private sendSlackNotification(message: string): void {
-    this.eventBus.publish(
-      new SendSlackMessageEvent(
-        '#error-alerts',
-        `🚨 Error in PaymentCompletedListener: ${message}`,
-      ),
-    );
-  }
-
-  private async handleFailedExternalSave(event: PaymentCompletedEvent) {
-    this.loggerService.warn(
-      `주문 정보 외부 저장 실패 처리 시작: OrderID=${event.orderId}`,
-      PaymentCompletedListener.name,
-    );
-    // 여기에 추가적인 실패 처리 로직을 구현할 수 있습니다.
-    // 예: 데이터베이스에 실패한 이벤트 저장, 다른 서비스에 알림 등
+    this.kafkaClient.emit('slack.notification', {
+      channel: '#error-alerts',
+      text: `🚨 Error in PaymentCompletedListener: ${message}`,
+    });
   }
 }

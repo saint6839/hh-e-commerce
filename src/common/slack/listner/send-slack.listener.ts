@@ -1,27 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ClientKafka, EventPattern, Payload } from '@nestjs/microservices';
 import { WebClient } from '@slack/web-api';
-import { SendSlackMessageEvent } from '../event/send-slack.event';
 
 @Injectable()
-@EventsHandler(SendSlackMessageEvent)
-export class SendSlackMessageListener
-  implements IEventHandler<SendSlackMessageEvent>
-{
+export class SendSlackMessageListener {
   private readonly slackClient: WebClient;
+  private readonly logger = new Logger(SendSlackMessageListener.name);
 
-  constructor() {
+  constructor(
+    @Inject('NOTIFICATION_SERVICE') private readonly kafkaClient: ClientKafka,
+  ) {
     this.slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
   }
 
-  async handle(event: SendSlackMessageEvent) {
+  @EventPattern('slack.notification')
+  async handleSlackNotification(
+    @Payload() payload: { channel: string; text: string },
+  ) {
     try {
       await this.slackClient.chat.postMessage({
-        channel: event.channel,
-        text: event.text,
+        channel: payload.channel,
+        text: payload.text,
       });
+      this.logger.log(`Slack message sent to ${payload.channel}`);
     } catch (error) {
-      console.error('Failed to send Slack message:', error);
+      this.logger.error(`Failed to send Slack message: ${error.message}`);
     }
   }
 }

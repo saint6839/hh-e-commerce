@@ -1,7 +1,11 @@
 import { INestApplication } from '@nestjs/common';
-import { EventBus } from '@nestjs/cqrs';
+import { ClientKafka } from '@nestjs/microservices';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  IOutboxRepository,
+  IOutboxRepositoryToken,
+} from 'src/common/outbox/domain/interface/outbox.repository.interface';
 import { OrderStatus } from 'src/order/domain/enum/order-status.enum';
 import { OrderItemEntity } from 'src/order/repository/entity/order-item.entity';
 import {
@@ -10,14 +14,12 @@ import {
 } from 'src/order/repository/entity/order.entity';
 import { PaymentStatus } from 'src/payment/domain/enum/payment-status.enum';
 import { ICompletePaymentFacadeUseCaseToken } from 'src/payment/domain/interface/usecase/complete-payment-facade.usecase.interface';
-import { PaymentCompletedEvent } from 'src/payment/event/payment-completed.event';
 import {
   NOT_FOUND_PAYMENT_ERROR,
   PaymentEntity,
 } from 'src/payment/infrastructure/entity/payment.entity';
 import { CompletePaymentFacadeDto } from 'src/payment/presentation/dto/request/complete-payment-facade.dto';
 import { CompletePaymentFacadeUseCase } from 'src/payment/usecase/complete-payment-facade.usecase';
-import { AccumulatePopularProductsSoldEvent } from 'src/product/event/accumulate-popular-products-sold.event';
 import { ProductOptionEntity } from 'src/product/infrastructure/entity/product-option.entity';
 import { INSUFFICIENT_BALANCE_ERROR } from 'src/user/domain/entity/user';
 import { UserEntity } from 'src/user/infrastructure/entity/user.entity';
@@ -32,7 +34,9 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
   let orderItemRepository: Repository<OrderItemEntity>;
   let userRepository: Repository<UserEntity>;
   let productOptionRepository: Repository<ProductOptionEntity>;
-  let eventBus: EventBus;
+  let outboxRepository: IOutboxRepository;
+  let paymentClient: ClientKafka;
+  let productClient: ClientKafka;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await setupTestingModule();
@@ -52,12 +56,18 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     productOptionRepository = moduleFixture.get(
       getRepositoryToken(ProductOptionEntity),
     );
-    eventBus = moduleFixture.get(EventBus);
+    outboxRepository = moduleFixture.get<IOutboxRepository>(
+      IOutboxRepositoryToken,
+    );
+    paymentClient = moduleFixture.get<ClientKafka>('PAYMENT_SERVICE');
+    productClient = moduleFixture.get<ClientKafka>('PRODUCT_SERVICE');
   });
 
   afterAll(async () => {
     await app.close();
-  });
+    await paymentClient.close();
+    await productClient.close();
+  }, 30000);
 
   afterEach(async () => {
     await paymentRepository.clear();
@@ -65,6 +75,10 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await orderItemRepository.clear();
     await userRepository.clear();
     await productOptionRepository.clear();
+    const outboxEvents = await outboxRepository.findUnpublished();
+    for (const event of outboxEvents) {
+      await outboxRepository.markAsPublished(event.id);
+    }
     jest.clearAllMocks();
   });
 
@@ -110,7 +124,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       'test_tid',
     );
 
-    const publishSpy = jest.spyOn(eventBus, 'publish');
+    const paymentEmitSpy = jest.spyOn(paymentClient, 'emit');
+    const productEmitSpy = jest.spyOn(productClient, 'emit');
 
     // when
     const result = await completePaymentFacadeUseCase.execute(
@@ -140,12 +155,66 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     expect(updatedUser).toBeDefined();
     expect(updatedUser?.balance).toBe(5000);
 
-    expect(publishSpy).toHaveBeenCalledTimes(2);
-    expect(publishSpy).toHaveBeenCalledWith(expect.any(PaymentCompletedEvent));
-    expect(publishSpy).toHaveBeenCalledWith(
-      expect.any(AccumulatePopularProductsSoldEvent),
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(2);
+
+    const paymentCompletedEvent = outboxEvents.find(
+      (event) => event.eventType === 'payment.completed',
     );
-  });
+    // 이벤트가 처리되는 시간 고려하여 잠깐 대기
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    expect(paymentCompletedEvent).toBeDefined();
+
+    const paymentCompletedPayload =
+      typeof paymentCompletedEvent!.payload === 'string'
+        ? JSON.parse(paymentCompletedEvent!.payload)
+        : paymentCompletedEvent!.payload;
+
+    expect(paymentCompletedPayload).toMatchObject({
+      paymentId: payment.id,
+      orderId: order.id,
+      userId: user.id,
+      amount: 5000,
+      status: PaymentStatus.COMPLETED,
+    });
+
+    const productPopularAccumulateEvent = outboxEvents.find(
+      (event) => event.eventType === 'product.popular.accumulate',
+    );
+    expect(productPopularAccumulateEvent).toBeDefined();
+
+    const productPopularAccumulatePayload =
+      typeof productPopularAccumulateEvent!.payload === 'string'
+        ? JSON.parse(productPopularAccumulateEvent!.payload)
+        : productPopularAccumulateEvent!.payload;
+
+    expect(productPopularAccumulatePayload).toMatchObject({
+      orderItems: expect.arrayContaining([
+        expect.objectContaining({
+          orderId: order.id,
+          productOptionId: productOption.id,
+          quantity: 2,
+          totalPriceAtOrder: 5000,
+        }),
+      ]),
+    });
+
+    // 이벤트 발행 호출 확인
+    expect(paymentEmitSpy).toHaveBeenCalledTimes(1);
+    expect(paymentEmitSpy).toHaveBeenCalledWith(
+      'payment.completed',
+      expect.any(Object),
+    );
+    expect(productEmitSpy).toHaveBeenCalledTimes(1);
+    expect(productEmitSpy).toHaveBeenCalledWith(
+      'product.popular.accumulate',
+      expect.any(Object),
+    );
+
+    // 이벤트 성공적으로 소비되어 outbox 상태 값 바뀌었는지 확인
+    const updatedOutboxEvents = await outboxRepository.findUnpublished();
+    expect(updatedOutboxEvents).toHaveLength(0);
+  }, 10000);
 
   it('잔액이 부족한 경우 예외를 발생시키고 이벤트가 발행되지 않는지 테스트', async () => {
     // given
@@ -174,7 +243,7 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
       'test_tid',
     );
 
-    const publishSpy = jest.spyOn(eventBus, 'publish');
+    const emitSpy = jest.spyOn(paymentClient, 'emit');
 
     // when & then
     await expect(
@@ -199,7 +268,10 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     expect(unchangedUser).toBeDefined();
     expect(unchangedUser?.balance).toBe(1000);
 
-    expect(publishSpy).not.toHaveBeenCalled();
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(0);
+
+    expect(emitSpy).not.toHaveBeenCalled();
   });
 
   it('존재하지 않는 결제에 대해 예외를 발생시키는지 테스트', async () => {
@@ -215,6 +287,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await expect(
       completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
     ).rejects.toThrow(NOT_FOUND_PAYMENT_ERROR);
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(0);
   });
 
   it('존재하지 않는 주문에 대해 예외를 발생시키는지 테스트', async () => {
@@ -237,5 +311,8 @@ describe('CompletePaymentFacadeUseCase 통합 테스트', () => {
     await expect(
       completePaymentFacadeUseCase.execute(completePaymentFacadeDto),
     ).rejects.toThrow(NOT_FOUND_ORDER_ERROR);
+
+    const outboxEvents = await outboxRepository.findUnpublished();
+    expect(outboxEvents).toHaveLength(0);
   });
 });
