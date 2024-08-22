@@ -1,0 +1,29 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 30
+      arrivalRate: 20
+      name: '초기 600명 사용자'
+    - duration: 30
+      arrivalRate: 50
+      name: '중간 1500명 사용자'
+    - duration: 30
+      arrivalRate: 100
+      name: '최대 3000명 사용자'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+  processor: './payment-functions.js'
+
+scenarios:
+  - name: '결제 확정 API 테스트'
+    flow:
+      - function: 'generatePaymentData'
+      - think: 1
+      - post:
+          url: '/api/v1/payments'
+          json:
+            paymentId: '{{ paymentId }}'
+            userId: '{{ userId }}'
+            mid: '{{ mid }}'
+            tid: '{{ tid }}'

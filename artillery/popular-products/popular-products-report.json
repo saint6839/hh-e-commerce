@@ -1,0 +1,851 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 4650,
+      "vusers.created": 4650,
+      "http.requests": 4650,
+      "http.codes.200": 4650,
+      "http.responses": 4650,
+      "http.downloaded_bytes": 7816650,
+      "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 4650,
+      "vusers.failed": 0,
+      "vusers.completed": 4650
+    },
+    "rates": {
+      "http.request_rate": 82
+    },
+    "firstCounterAt": 1724291912092,
+    "firstHistogramAt": 1724291912282,
+    "lastCounterAt": 1724291973010,
+    "lastHistogramAt": 1724291973010,
+    "firstMetricAt": 1724291912092,
+    "lastMetricAt": 1724291973010,
+    "period": 1724291970000,
+    "summaries": {
+      "http.response_time": {
+        "min": 0,
+        "max": 176,
+        "count": 4650,
+        "mean": 2.2,
+        "p50": 2,
+        "median": 2,
+        "p75": 2,
+        "p90": 4,
+        "p95": 4,
+        "p99": 10.1,
+        "p999": 29.1
+      },
+      "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+        "min": 0,
+        "max": 176,
+        "count": 4650,
+        "mean": 2.2,
+        "p50": 2,
+        "median": 2,
+        "p75": 2,
+        "p90": 4,
+        "p95": 4,
+        "p99": 10.1,
+        "p999": 29.1
+      },
+      "vusers.session_length": {
+        "min": 1000.9,
+        "max": 1193.6,
+        "count": 4650,
+        "mean": 1004.8,
+        "p50": 1002.4,
+        "median": 1002.4,
+        "p75": 1002.4,
+        "p90": 1002.4,
+        "p95": 1002.4,
+        "p99": 1022.7,
+        "p999": 1085.9
+      }
+    },
+    "histograms": {
+      "http.response_time": {
+        "min": 0,
+        "max": 176,
+        "count": 4650,
+        "mean": 2.2,
+        "p50": 2,
+        "median": 2,
+        "p75": 2,
+        "p90": 4,
+        "p95": 4,
+        "p99": 10.1,
+        "p999": 29.1
+      },
+      "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+        "min": 0,
+        "max": 176,
+        "count": 4650,
+        "mean": 2.2,
+        "p50": 2,
+        "median": 2,
+        "p75": 2,
+        "p90": 4,
+        "p95": 4,
+        "p99": 10.1,
+        "p999": 29.1
+      },
+      "vusers.session_length": {
+        "min": 1000.9,
+        "max": 1193.6,
+        "count": 4650,
+        "mean": 1004.8,
+        "p50": 1002.4,
+        "median": 1002.4,
+        "p75": 1002.4,
+        "p90": 1002.4,
+        "p95": 1002.4,
+        "p99": 1022.7,
+        "p999": 1085.9
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 169,
+        "vusers.created": 169,
+        "http.requests": 169,
+        "http.codes.200": 169,
+        "http.responses": 169,
+        "http.downloaded_bytes": 284089,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 169,
+        "vusers.failed": 0,
+        "vusers.completed": 137
+      },
+      "rates": {
+        "http.request_rate": 23
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291912092,
+      "firstHistogramAt": 1724291912282,
+      "lastCounterAt": 1724291919953,
+      "lastHistogramAt": 1724291919953,
+      "firstMetricAt": 1724291912092,
+      "lastMetricAt": 1724291919953,
+      "period": "1724291910000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1,
+          "max": 176,
+          "count": 169,
+          "mean": 4.6,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 5,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 29.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 1,
+          "max": 176,
+          "count": 169,
+          "mean": 4.6,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 5,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 29.1
+        },
+        "vusers.session_length": {
+          "min": 1002.2,
+          "max": 1193.6,
+          "count": 137,
+          "mean": 1009.8,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 1,
+          "max": 176,
+          "count": 169,
+          "mean": 4.6,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 5,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 29.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 1,
+          "max": 176,
+          "count": 169,
+          "mean": 4.6,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 5,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 29.1
+        },
+        "vusers.session_length": {
+          "min": 1002.2,
+          "max": 1193.6,
+          "count": 137,
+          "mean": 1009.8,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 496,
+        "vusers.created": 496,
+        "http.requests": 496,
+        "vusers.failed": 0,
+        "vusers.completed": 462,
+        "http.codes.200": 494,
+        "http.responses": 494,
+        "http.downloaded_bytes": 830414,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 494
+      },
+      "rates": {
+        "http.request_rate": 50
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291920000,
+      "firstHistogramAt": 1724291920004,
+      "lastCounterAt": 1724291929997,
+      "lastHistogramAt": 1724291929994,
+      "firstMetricAt": 1724291920000,
+      "lastMetricAt": 1724291929997,
+      "period": "1724291920000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1002.3,
+          "max": 1035.7,
+          "count": 462,
+          "mean": 1006.2,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1022.7
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 20,
+          "count": 494,
+          "mean": 3.3,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 18
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 1,
+          "max": 20,
+          "count": 494,
+          "mean": 3.3,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 18
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1002.3,
+          "max": 1035.7,
+          "count": 462,
+          "mean": 1006.2,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1022.7
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 20,
+          "count": 494,
+          "mean": 3.3,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 18
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 1,
+          "max": 20,
+          "count": 494,
+          "mean": 3.3,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 10.9,
+          "p999": 18
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 773,
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 802,
+        "vusers.created": 802,
+        "http.requests": 802,
+        "http.codes.200": 804,
+        "http.responses": 804,
+        "http.downloaded_bytes": 1351524,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 804
+      },
+      "rates": {
+        "http.request_rate": 82
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291930001,
+      "firstHistogramAt": 1724291930001,
+      "lastCounterAt": 1724291939984,
+      "lastHistogramAt": 1724291939984,
+      "firstMetricAt": 1724291930001,
+      "lastMetricAt": 1724291939984,
+      "period": "1724291930000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1097.3,
+          "count": 773,
+          "mean": 1006.9,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1085.9
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 71,
+          "count": 804,
+          "mean": 2.9,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 12.1,
+          "p999": 47.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 1,
+          "max": 71,
+          "count": 804,
+          "mean": 2.9,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 12.1,
+          "p999": 47.9
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1097.3,
+          "count": 773,
+          "mean": 1006.9,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1085.9
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 71,
+          "count": 804,
+          "mean": 2.9,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 12.1,
+          "p999": 47.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 1,
+          "max": 71,
+          "count": 804,
+          "mean": 2.9,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 12.1,
+          "p999": 47.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 996,
+        "vusers.created": 996,
+        "http.requests": 996,
+        "vusers.failed": 0,
+        "vusers.completed": 991,
+        "http.codes.200": 996,
+        "http.responses": 996,
+        "http.downloaded_bytes": 1674276,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 996
+      },
+      "rates": {
+        "http.request_rate": 100
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291940003,
+      "firstHistogramAt": 1724291940003,
+      "lastCounterAt": 1724291949985,
+      "lastHistogramAt": 1724291949985,
+      "firstMetricAt": 1724291940003,
+      "lastMetricAt": 1724291949985,
+      "period": "1724291940000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1001,
+          "max": 1092.9,
+          "count": 991,
+          "mean": 1004.7,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1085.9
+        },
+        "http.response_time": {
+          "min": 0,
+          "max": 86,
+          "count": 996,
+          "mean": 1.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 4,
+          "p99": 7,
+          "p999": 22.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 86,
+          "count": 996,
+          "mean": 1.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 4,
+          "p99": 7,
+          "p999": 22.9
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1001,
+          "max": 1092.9,
+          "count": 991,
+          "mean": 1004.7,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1085.9
+        },
+        "http.response_time": {
+          "min": 0,
+          "max": 86,
+          "count": 996,
+          "mean": 1.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 4,
+          "p99": 7,
+          "p999": 22.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 86,
+          "count": 996,
+          "mean": 1.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 4,
+          "p99": 7,
+          "p999": 22.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 1000,
+        "vusers.created": 1000,
+        "http.requests": 1000,
+        "http.codes.200": 1000,
+        "http.responses": 1000,
+        "http.downloaded_bytes": 1681000,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 1000,
+        "vusers.failed": 0,
+        "vusers.completed": 1000
+      },
+      "rates": {
+        "http.request_rate": 100
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291950000,
+      "firstHistogramAt": 1724291950002,
+      "lastCounterAt": 1724291959985,
+      "lastHistogramAt": 1724291959985,
+      "firstMetricAt": 1724291950000,
+      "lastMetricAt": 1724291959985,
+      "period": "1724291950000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 29,
+          "count": 1000,
+          "mean": 1.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 7,
+          "p999": 16
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 29,
+          "count": 1000,
+          "mean": 1.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 7,
+          "p999": 16
+        },
+        "vusers.session_length": {
+          "min": 1000.9,
+          "max": 1046.6,
+          "count": 1000,
+          "mean": 1003.3,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 29,
+          "count": 1000,
+          "mean": 1.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 7,
+          "p999": 16
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 29,
+          "count": 1000,
+          "mean": 1.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 7,
+          "p999": 16
+        },
+        "vusers.session_length": {
+          "min": 1000.9,
+          "max": 1046.6,
+          "count": 1000,
+          "mean": 1003.3,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 1000,
+        "vusers.created": 1000,
+        "http.requests": 1000,
+        "http.codes.200": 1000,
+        "http.responses": 1000,
+        "http.downloaded_bytes": 1681000,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 1000,
+        "vusers.failed": 0,
+        "vusers.completed": 1000
+      },
+      "rates": {
+        "http.request_rate": 100
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291960000,
+      "firstHistogramAt": 1724291960003,
+      "lastCounterAt": 1724291969985,
+      "lastHistogramAt": 1724291969985,
+      "firstMetricAt": 1724291960000,
+      "lastMetricAt": 1724291969985,
+      "period": "1724291960000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 17,
+          "count": 1000,
+          "mean": 1.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 13.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 17,
+          "count": 1000,
+          "mean": 1.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 13.9
+        },
+        "vusers.session_length": {
+          "min": 1001,
+          "max": 1034.9,
+          "count": 1000,
+          "mean": 1003.4,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 17,
+          "count": 1000,
+          "mean": 1.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 13.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 17,
+          "count": 1000,
+          "mean": 1.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 13.9
+        },
+        "vusers.session_length": {
+          "min": 1001,
+          "max": 1034.9,
+          "count": 1000,
+          "mean": 1003.4,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.인기 상품 목록 조회 API 테스트": 187,
+        "vusers.created": 187,
+        "http.requests": 187,
+        "http.codes.200": 187,
+        "http.responses": 187,
+        "http.downloaded_bytes": 314347,
+        "plugins.metrics-by-endpoint./api/v1/products/popular.codes.200": 187,
+        "vusers.failed": 0,
+        "vusers.completed": 287
+      },
+      "rates": {
+        "http.request_rate": 109
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291970000,
+      "firstHistogramAt": 1724291970004,
+      "lastCounterAt": 1724291973010,
+      "lastHistogramAt": 1724291973010,
+      "firstMetricAt": 1724291970000,
+      "lastMetricAt": 1724291973010,
+      "period": "1724291970000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 15,
+          "count": 187,
+          "mean": 2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 8.9,
+          "p999": 10.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 15,
+          "count": 187,
+          "mean": 2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 8.9,
+          "p999": 10.1
+        },
+        "vusers.session_length": {
+          "min": 1001.4,
+          "max": 1036.3,
+          "count": 287,
+          "mean": 1004.3,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1022.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 15,
+          "count": 187,
+          "mean": 2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 8.9,
+          "p999": 10.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/popular": {
+          "min": 0,
+          "max": 15,
+          "count": 187,
+          "mean": 2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 8.9,
+          "p999": 10.1
+        },
+        "vusers.session_length": {
+          "min": 1001.4,
+          "max": 1036.3,
+          "count": 287,
+          "mean": 1004.3,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1022.7
+        }
+      }
+    }
+  ]
+}
