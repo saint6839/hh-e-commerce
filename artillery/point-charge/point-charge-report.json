@@ -1,0 +1,1169 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.사용자 포인트 충전 API 테스트": 5100,
+      "vusers.created": 5100,
+      "http.requests": 5100,
+      "http.codes.201": 5100,
+      "http.responses": 5100,
+      "http.downloaded_bytes": 576535,
+      "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 5100,
+      "vusers.failed": 0,
+      "vusers.completed": 5100
+    },
+    "rates": {
+      "http.request_rate": 60
+    },
+    "firstCounterAt": 1724289742217,
+    "firstHistogramAt": 1724289742254,
+    "lastCounterAt": 1724289833294,
+    "lastHistogramAt": 1724289833294,
+    "firstMetricAt": 1724289742217,
+    "lastMetricAt": 1724289833294,
+    "period": 1724289830000,
+    "summaries": {
+      "http.response_time": {
+        "min": 1,
+        "max": 88,
+        "count": 5100,
+        "mean": 2.9,
+        "p50": 2,
+        "median": 2,
+        "p75": 3,
+        "p90": 3,
+        "p95": 6,
+        "p99": 22.9,
+        "p999": 58.6
+      },
+      "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+        "min": 1,
+        "max": 88,
+        "count": 5100,
+        "mean": 2.9,
+        "p50": 2,
+        "median": 2,
+        "p75": 3,
+        "p90": 3,
+        "p95": 6,
+        "p99": 22.9,
+        "p999": 58.6
+      },
+      "vusers.session_length": {
+        "min": 1001.3,
+        "max": 1109.2,
+        "count": 5100,
+        "mean": 1005.4,
+        "p50": 1002.4,
+        "median": 1002.4,
+        "p75": 1002.4,
+        "p90": 1002.4,
+        "p95": 1022.7,
+        "p99": 1043.3,
+        "p999": 1085.9
+      }
+    },
+    "histograms": {
+      "http.response_time": {
+        "min": 1,
+        "max": 88,
+        "count": 5100,
+        "mean": 2.9,
+        "p50": 2,
+        "median": 2,
+        "p75": 3,
+        "p90": 3,
+        "p95": 6,
+        "p99": 22.9,
+        "p999": 58.6
+      },
+      "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+        "min": 1,
+        "max": 88,
+        "count": 5100,
+        "mean": 2.9,
+        "p50": 2,
+        "median": 2,
+        "p75": 3,
+        "p90": 3,
+        "p95": 6,
+        "p99": 22.9,
+        "p999": 58.6
+      },
+      "vusers.session_length": {
+        "min": 1001.3,
+        "max": 1109.2,
+        "count": 5100,
+        "mean": 1005.4,
+        "p50": 1002.4,
+        "median": 1002.4,
+        "p75": 1002.4,
+        "p90": 1002.4,
+        "p95": 1022.7,
+        "p99": 1043.3,
+        "p999": 1085.9
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 154,
+        "vusers.created": 154,
+        "http.requests": 154,
+        "http.codes.201": 154,
+        "http.responses": 154,
+        "http.downloaded_bytes": 17406,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 154,
+        "vusers.failed": 0,
+        "vusers.completed": 134
+      },
+      "rates": {
+        "http.request_rate": 20
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289742217,
+      "firstHistogramAt": 1724289742254,
+      "lastCounterAt": 1724289749991,
+      "lastHistogramAt": 1724289749991,
+      "firstMetricAt": 1724289742217,
+      "lastMetricAt": 1724289749991,
+      "period": "1724289740000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1,
+          "max": 25,
+          "count": 154,
+          "mean": 3.5,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 13.9,
+          "p999": 18
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 25,
+          "count": 154,
+          "mean": 3.5,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 13.9,
+          "p999": 18
+        },
+        "vusers.session_length": {
+          "min": 1003.4,
+          "max": 1037.9,
+          "count": 134,
+          "mean": 1007.3,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1022.7,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1022.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 1,
+          "max": 25,
+          "count": 154,
+          "mean": 3.5,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 13.9,
+          "p999": 18
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 25,
+          "count": 154,
+          "mean": 3.5,
+          "p50": 3,
+          "median": 3,
+          "p75": 4,
+          "p90": 4,
+          "p95": 5,
+          "p99": 13.9,
+          "p999": 18
+        },
+        "vusers.session_length": {
+          "min": 1003.4,
+          "max": 1037.9,
+          "count": 134,
+          "mean": 1007.3,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1022.7,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1022.7
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 200,
+        "vusers.created": 200,
+        "http.requests": 200,
+        "http.codes.201": 200,
+        "http.responses": 200,
+        "http.downloaded_bytes": 22593,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 200,
+        "vusers.failed": 0,
+        "vusers.completed": 200
+      },
+      "rates": {
+        "http.request_rate": 20
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289750036,
+      "firstHistogramAt": 1724289750041,
+      "lastCounterAt": 1724289759989,
+      "lastHistogramAt": 1724289759989,
+      "firstMetricAt": 1724289750036,
+      "lastMetricAt": 1724289759989,
+      "period": "1724289750000",
+      "summaries": {
+        "http.response_time": {
+          "min": 2,
+          "max": 49,
+          "count": 200,
+          "mean": 3.7,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 43.4,
+          "p999": 47.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 2,
+          "max": 49,
+          "count": 200,
+          "mean": 3.7,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 43.4,
+          "p999": 47.9
+        },
+        "vusers.session_length": {
+          "min": 1002.8,
+          "max": 1067.4,
+          "count": 200,
+          "mean": 1006.6,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1064.4,
+          "p999": 1064.4
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 2,
+          "max": 49,
+          "count": 200,
+          "mean": 3.7,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 43.4,
+          "p999": 47.9
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 2,
+          "max": 49,
+          "count": 200,
+          "mean": 3.7,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 5,
+          "p99": 43.4,
+          "p999": 47.9
+        },
+        "vusers.session_length": {
+          "min": 1002.8,
+          "max": 1067.4,
+          "count": 200,
+          "mean": 1006.6,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1064.4,
+          "p999": 1064.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 200,
+        "vusers.created": 200,
+        "http.requests": 200,
+        "vusers.failed": 0,
+        "vusers.completed": 200,
+        "http.codes.201": 200,
+        "http.responses": 200,
+        "http.downloaded_bytes": 22609,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 200
+      },
+      "rates": {
+        "http.request_rate": 20
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289760036,
+      "firstHistogramAt": 1724289760040,
+      "lastCounterAt": 1724289769990,
+      "lastHistogramAt": 1724289769990,
+      "firstMetricAt": 1724289760036,
+      "lastMetricAt": 1724289769990,
+      "period": "1724289760000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1003,
+          "max": 1061.1,
+          "count": 200,
+          "mean": 1005.4,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1043.3,
+          "p999": 1043.3
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 18,
+          "count": 200,
+          "mean": 2.9,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 4,
+          "p99": 16,
+          "p999": 16
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 18,
+          "count": 200,
+          "mean": 2.9,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 4,
+          "p99": 16,
+          "p999": 16
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1003,
+          "max": 1061.1,
+          "count": 200,
+          "mean": 1005.4,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1043.3,
+          "p999": 1043.3
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 18,
+          "count": 200,
+          "mean": 2.9,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 4,
+          "p99": 16,
+          "p999": 16
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 18,
+          "count": 200,
+          "mean": 2.9,
+          "p50": 3,
+          "median": 3,
+          "p75": 3,
+          "p90": 4,
+          "p95": 4,
+          "p99": 16,
+          "p999": 16
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 438,
+        "vusers.created": 438,
+        "http.requests": 438,
+        "http.codes.201": 438,
+        "http.responses": 438,
+        "http.downloaded_bytes": 49526,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 438,
+        "vusers.failed": 0,
+        "vusers.completed": 408
+      },
+      "rates": {
+        "http.request_rate": 43
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289770036,
+      "firstHistogramAt": 1724289770041,
+      "lastCounterAt": 1724289779995,
+      "lastHistogramAt": 1724289779995,
+      "firstMetricAt": 1724289770036,
+      "lastMetricAt": 1724289779995,
+      "period": "1724289770000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1,
+          "max": 24,
+          "count": 438,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 3,
+          "p95": 4,
+          "p99": 10.1,
+          "p999": 22
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 24,
+          "count": 438,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 3,
+          "p95": 4,
+          "p99": 10.1,
+          "p999": 22
+        },
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1056.2,
+          "count": 408,
+          "mean": 1004.4,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 1,
+          "max": 24,
+          "count": 438,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 3,
+          "p95": 4,
+          "p99": 10.1,
+          "p999": 22
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 24,
+          "count": 438,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 3,
+          "p95": 4,
+          "p99": 10.1,
+          "p999": 22
+        },
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1056.2,
+          "count": 408,
+          "mean": 1004.4,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 500,
+        "vusers.created": 500,
+        "http.requests": 500,
+        "http.codes.201": 500,
+        "http.responses": 500,
+        "http.downloaded_bytes": 56529,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 500,
+        "vusers.failed": 0,
+        "vusers.completed": 500
+      },
+      "rates": {
+        "http.request_rate": 50
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289780037,
+      "firstHistogramAt": 1724289780040,
+      "lastCounterAt": 1724289789994,
+      "lastHistogramAt": 1724289789994,
+      "firstMetricAt": 1724289780037,
+      "lastMetricAt": 1724289789994,
+      "period": "1724289780000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1,
+          "max": 41,
+          "count": 500,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 40
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 41,
+          "count": 500,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 40
+        },
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1047.1,
+          "count": 500,
+          "mean": 1004.2,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 1,
+          "max": 41,
+          "count": 500,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 40
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 41,
+          "count": 500,
+          "mean": 2.4,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 10.1,
+          "p999": 40
+        },
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1047.1,
+          "count": 500,
+          "mean": 1004.2,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1043.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 500,
+        "vusers.created": 500,
+        "http.requests": 500,
+        "http.codes.201": 500,
+        "http.responses": 500,
+        "http.downloaded_bytes": 56513,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 500,
+        "vusers.failed": 0,
+        "vusers.completed": 500
+      },
+      "rates": {
+        "http.request_rate": 50
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289790037,
+      "firstHistogramAt": 1724289790040,
+      "lastCounterAt": 1724289799996,
+      "lastHistogramAt": 1724289799996,
+      "firstMetricAt": 1724289790037,
+      "lastMetricAt": 1724289799996,
+      "period": "1724289790000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1,
+          "max": 19,
+          "count": 500,
+          "mean": 2.2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 7.9,
+          "p999": 13.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 19,
+          "count": 500,
+          "mean": 2.2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 7.9,
+          "p999": 13.1
+        },
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1034.7,
+          "count": 500,
+          "mean": 1003.9,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1022.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 1,
+          "max": 19,
+          "count": 500,
+          "mean": 2.2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 7.9,
+          "p999": 13.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 19,
+          "count": 500,
+          "mean": 2.2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 7.9,
+          "p999": 13.1
+        },
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1034.7,
+          "count": 500,
+          "mean": 1003.9,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1002.4,
+          "p99": 1022.7,
+          "p999": 1022.7
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 895,
+        "vusers.created": 895,
+        "http.requests": 895,
+        "vusers.failed": 0,
+        "vusers.completed": 844,
+        "http.codes.201": 894,
+        "http.responses": 894,
+        "http.downloaded_bytes": 101065,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 894
+      },
+      "rates": {
+        "http.request_rate": 91
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289800037,
+      "firstHistogramAt": 1724289800040,
+      "lastCounterAt": 1724289809999,
+      "lastHistogramAt": 1724289809991,
+      "firstMetricAt": 1724289800037,
+      "lastMetricAt": 1724289809999,
+      "period": "1724289800000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1075.8,
+          "count": 844,
+          "mean": 1005.1,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1043.3
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 33,
+          "count": 894,
+          "mean": 2.6,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 7,
+          "p99": 19.9,
+          "p999": 30.3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 33,
+          "count": 894,
+          "mean": 2.6,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 7,
+          "p99": 19.9,
+          "p999": 30.3
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1075.8,
+          "count": 844,
+          "mean": 1005.1,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1043.3
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 33,
+          "count": 894,
+          "mean": 2.6,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 7,
+          "p99": 19.9,
+          "p999": 30.3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 33,
+          "count": 894,
+          "mean": 2.6,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 7,
+          "p99": 19.9,
+          "p999": 30.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 1000,
+        "vusers.created": 1000,
+        "http.requests": 1000,
+        "http.codes.201": 1000,
+        "http.responses": 1000,
+        "http.downloaded_bytes": 113061,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 1000,
+        "vusers.failed": 0,
+        "vusers.completed": 1000
+      },
+      "rates": {
+        "http.request_rate": 100
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289810001,
+      "firstHistogramAt": 1724289810001,
+      "lastCounterAt": 1724289819999,
+      "lastHistogramAt": 1724289819990,
+      "firstMetricAt": 1724289810001,
+      "lastMetricAt": 1724289819999,
+      "period": "1724289810000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1,
+          "max": 88,
+          "count": 1000,
+          "mean": 2.8,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 6,
+          "p99": 26.8,
+          "p999": 58.6
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 88,
+          "count": 1000,
+          "mean": 2.8,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 6,
+          "p99": 26.8,
+          "p999": 58.6
+        },
+        "vusers.session_length": {
+          "min": 1001.3,
+          "max": 1090.4,
+          "count": 1000,
+          "mean": 1005.1,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1085.9
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 1,
+          "max": 88,
+          "count": 1000,
+          "mean": 2.8,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 6,
+          "p99": 26.8,
+          "p999": 58.6
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 88,
+          "count": 1000,
+          "mean": 2.8,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 6,
+          "p99": 26.8,
+          "p999": 58.6
+        },
+        "vusers.session_length": {
+          "min": 1001.3,
+          "max": 1090.4,
+          "count": 1000,
+          "mean": 1005.1,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1043.3,
+          "p999": 1085.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 1000,
+        "vusers.created": 1000,
+        "http.requests": 1000,
+        "vusers.failed": 0,
+        "vusers.completed": 1000,
+        "http.codes.201": 1000,
+        "http.responses": 1000,
+        "http.downloaded_bytes": 113030,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 1000
+      },
+      "rates": {
+        "http.request_rate": 100
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289820001,
+      "firstHistogramAt": 1724289820001,
+      "lastCounterAt": 1724289829999,
+      "lastHistogramAt": 1724289829990,
+      "firstMetricAt": 1724289820001,
+      "lastMetricAt": 1724289829999,
+      "period": "1724289820000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1109.2,
+          "count": 1000,
+          "mean": 1007,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1022.7,
+          "p95": 1022.7,
+          "p99": 1064.4,
+          "p999": 1107.9
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 84,
+          "count": 1000,
+          "mean": 3.7,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 5,
+          "p95": 13.1,
+          "p99": 34.1,
+          "p999": 63.4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 84,
+          "count": 1000,
+          "mean": 3.7,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 5,
+          "p95": 13.1,
+          "p99": 34.1,
+          "p999": 63.4
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1001.9,
+          "max": 1109.2,
+          "count": 1000,
+          "mean": 1007,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1022.7,
+          "p95": 1022.7,
+          "p99": 1064.4,
+          "p999": 1107.9
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 84,
+          "count": 1000,
+          "mean": 3.7,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 5,
+          "p95": 13.1,
+          "p99": 34.1,
+          "p999": 63.4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 84,
+          "count": 1000,
+          "mean": 3.7,
+          "p50": 2,
+          "median": 2,
+          "p75": 3,
+          "p90": 5,
+          "p95": 13.1,
+          "p99": 34.1,
+          "p999": 63.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.사용자 포인트 충전 API 테스트": 213,
+        "vusers.created": 213,
+        "http.requests": 213,
+        "vusers.failed": 0,
+        "vusers.completed": 314,
+        "http.codes.201": 214,
+        "http.responses": 214,
+        "http.downloaded_bytes": 24203,
+        "plugins.metrics-by-endpoint./api/v1/users/balance.codes.201": 214
+      },
+      "rates": {
+        "http.request_rate": 106
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724289830001,
+      "firstHistogramAt": 1724289830001,
+      "lastCounterAt": 1724289833294,
+      "lastHistogramAt": 1724289833294,
+      "firstMetricAt": 1724289830001,
+      "lastMetricAt": 1724289833294,
+      "period": "1724289830000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1002,
+          "max": 1046.3,
+          "count": 314,
+          "mean": 1005.6,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1043.3
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 8,
+          "count": 214,
+          "mean": 2.3,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 6,
+          "p999": 7
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 8,
+          "count": 214,
+          "mean": 2.3,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 6,
+          "p999": 7
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1002,
+          "max": 1046.3,
+          "count": 314,
+          "mean": 1005.6,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 1002.4,
+          "p90": 1002.4,
+          "p95": 1022.7,
+          "p99": 1022.7,
+          "p999": 1043.3
+        },
+        "http.response_time": {
+          "min": 1,
+          "max": 8,
+          "count": 214,
+          "mean": 2.3,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 6,
+          "p999": 7
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/users/balance": {
+          "min": 1,
+          "max": 8,
+          "count": 214,
+          "mean": 2.3,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 4,
+          "p99": 6,
+          "p999": 7
+        }
+      }
+    }
+  ]
+}

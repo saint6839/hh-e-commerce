@@ -1,0 +1,639 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.상품 목록 조회 API 테스트": 1800,
+      "vusers.created": 1800,
+      "http.requests": 1800,
+      "http.codes.200": 1800,
+      "http.responses": 1800,
+      "http.downloaded_bytes": 619664400,
+      "plugins.metrics-by-endpoint./api/v1/products/all.codes.200": 1800,
+      "vusers.failed": 0,
+      "vusers.completed": 1800
+    },
+    "rates": {
+      "http.request_rate": 47
+    },
+    "firstCounterAt": 1724291545115,
+    "firstHistogramAt": 1724291546579,
+    "lastCounterAt": 1724291586039,
+    "lastHistogramAt": 1724291586039,
+    "firstMetricAt": 1724291545115,
+    "lastMetricAt": 1724291586039,
+    "period": 1724291580000,
+    "summaries": {
+      "http.response_time": {
+        "min": 6,
+        "max": 1720,
+        "count": 1800,
+        "mean": 42.6,
+        "p50": 10.9,
+        "median": 10.9,
+        "p75": 22.9,
+        "p90": 111.1,
+        "p95": 175.9,
+        "p99": 314.2,
+        "p999": 1587.9
+      },
+      "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+        "min": 6,
+        "max": 1720,
+        "count": 1800,
+        "mean": 42.6,
+        "p50": 10.9,
+        "median": 10.9,
+        "p75": 22.9,
+        "p90": 111.1,
+        "p95": 175.9,
+        "p99": 314.2,
+        "p999": 1587.9
+      },
+      "vusers.session_length": {
+        "min": 1009.4,
+        "max": 2723.9,
+        "count": 1800,
+        "mean": 1051.8,
+        "p50": 1022.7,
+        "median": 1022.7,
+        "p75": 1043.3,
+        "p90": 1130.2,
+        "p95": 1200.1,
+        "p99": 1326.4,
+        "p999": 2618.1
+      }
+    },
+    "histograms": {
+      "http.response_time": {
+        "min": 6,
+        "max": 1720,
+        "count": 1800,
+        "mean": 42.6,
+        "p50": 10.9,
+        "median": 10.9,
+        "p75": 22.9,
+        "p90": 111.1,
+        "p95": 175.9,
+        "p99": 314.2,
+        "p999": 1587.9
+      },
+      "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+        "min": 6,
+        "max": 1720,
+        "count": 1800,
+        "mean": 42.6,
+        "p50": 10.9,
+        "median": 10.9,
+        "p75": 22.9,
+        "p90": 111.1,
+        "p95": 175.9,
+        "p99": 314.2,
+        "p999": 1587.9
+      },
+      "vusers.session_length": {
+        "min": 1009.4,
+        "max": 2723.9,
+        "count": 1800,
+        "mean": 1051.8,
+        "p50": 1022.7,
+        "median": 1022.7,
+        "p75": 1043.3,
+        "p90": 1130.2,
+        "p95": 1200.1,
+        "p99": 1326.4,
+        "p999": 2618.1
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.상품 목록 조회 API 테스트": 49,
+        "vusers.created": 49,
+        "http.requests": 49,
+        "http.codes.200": 49,
+        "http.responses": 49,
+        "http.downloaded_bytes": 16868642,
+        "plugins.metrics-by-endpoint./api/v1/products/all.codes.200": 49,
+        "vusers.failed": 0,
+        "vusers.completed": 37
+      },
+      "rates": {
+        "http.request_rate": 10
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291545115,
+      "firstHistogramAt": 1724291546579,
+      "lastCounterAt": 1724291549989,
+      "lastHistogramAt": 1724291549989,
+      "firstMetricAt": 1724291545115,
+      "lastMetricAt": 1724291549989,
+      "period": "1724291540000",
+      "summaries": {
+        "http.response_time": {
+          "min": 10,
+          "max": 1720,
+          "count": 49,
+          "mean": 362,
+          "p50": 15,
+          "median": 15,
+          "p75": 32.1,
+          "p90": 1556.5,
+          "p95": 1587.9,
+          "p99": 1620,
+          "p999": 1620
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 10,
+          "max": 1720,
+          "count": 49,
+          "mean": 362,
+          "p50": 15,
+          "median": 15,
+          "p75": 32.1,
+          "p90": 1556.5,
+          "p95": 1587.9,
+          "p99": 1620,
+          "p999": 1620
+        },
+        "vusers.session_length": {
+          "min": 1014.2,
+          "max": 2723.9,
+          "count": 37,
+          "mean": 1481.6,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 2515.5,
+          "p90": 2618.1,
+          "p95": 2618.1,
+          "p99": 2618.1,
+          "p999": 2618.1
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 10,
+          "max": 1720,
+          "count": 49,
+          "mean": 362,
+          "p50": 15,
+          "median": 15,
+          "p75": 32.1,
+          "p90": 1556.5,
+          "p95": 1587.9,
+          "p99": 1620,
+          "p999": 1620
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 10,
+          "max": 1720,
+          "count": 49,
+          "mean": 362,
+          "p50": 15,
+          "median": 15,
+          "p75": 32.1,
+          "p90": 1556.5,
+          "p95": 1587.9,
+          "p99": 1620,
+          "p999": 1620
+        },
+        "vusers.session_length": {
+          "min": 1014.2,
+          "max": 2723.9,
+          "count": 37,
+          "mean": 1481.6,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 2515.5,
+          "p90": 2618.1,
+          "p95": 2618.1,
+          "p99": 2618.1,
+          "p999": 2618.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.상품 목록 조회 API 테스트": 151,
+        "vusers.created": 151,
+        "http.requests": 151,
+        "http.codes.200": 151,
+        "http.responses": 151,
+        "http.downloaded_bytes": 51982958,
+        "plugins.metrics-by-endpoint./api/v1/products/all.codes.200": 151,
+        "vusers.failed": 0,
+        "vusers.completed": 143
+      },
+      "rates": {
+        "http.request_rate": 19
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291550007,
+      "firstHistogramAt": 1724291550007,
+      "lastCounterAt": 1724291559997,
+      "lastHistogramAt": 1724291559997,
+      "firstMetricAt": 1724291550007,
+      "lastMetricAt": 1724291559997,
+      "period": "1724291550000",
+      "summaries": {
+        "http.response_time": {
+          "min": 7,
+          "max": 68,
+          "count": 151,
+          "mean": 12.7,
+          "p50": 10.9,
+          "median": 10.9,
+          "p75": 13.1,
+          "p90": 18,
+          "p95": 22.9,
+          "p99": 32.8,
+          "p999": 34.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 7,
+          "max": 68,
+          "count": 151,
+          "mean": 12.7,
+          "p50": 10.9,
+          "median": 10.9,
+          "p75": 13.1,
+          "p90": 18,
+          "p95": 22.9,
+          "p99": 32.8,
+          "p999": 34.1
+        },
+        "vusers.session_length": {
+          "min": 1010.4,
+          "max": 1087.3,
+          "count": 143,
+          "mean": 1019.4,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 1022.7,
+          "p90": 1022.7,
+          "p95": 1043.3,
+          "p99": 1043.3,
+          "p999": 1085.9
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 7,
+          "max": 68,
+          "count": 151,
+          "mean": 12.7,
+          "p50": 10.9,
+          "median": 10.9,
+          "p75": 13.1,
+          "p90": 18,
+          "p95": 22.9,
+          "p99": 32.8,
+          "p999": 34.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 7,
+          "max": 68,
+          "count": 151,
+          "mean": 12.7,
+          "p50": 10.9,
+          "median": 10.9,
+          "p75": 13.1,
+          "p90": 18,
+          "p95": 22.9,
+          "p99": 32.8,
+          "p999": 34.1
+        },
+        "vusers.session_length": {
+          "min": 1010.4,
+          "max": 1087.3,
+          "count": 143,
+          "mean": 1019.4,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 1022.7,
+          "p90": 1022.7,
+          "p95": 1043.3,
+          "p99": 1043.3,
+          "p999": 1085.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.상품 목록 조회 API 테스트": 355,
+        "vusers.created": 355,
+        "http.requests": 355,
+        "http.codes.200": 353,
+        "http.responses": 353,
+        "http.downloaded_bytes": 121523074,
+        "plugins.metrics-by-endpoint./api/v1/products/all.codes.200": 353,
+        "vusers.failed": 0,
+        "vusers.completed": 324
+      },
+      "rates": {
+        "http.request_rate": 38
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291560000,
+      "firstHistogramAt": 1724291560012,
+      "lastCounterAt": 1724291569989,
+      "lastHistogramAt": 1724291569989,
+      "firstMetricAt": 1724291560000,
+      "lastMetricAt": 1724291569989,
+      "period": "1724291560000",
+      "summaries": {
+        "http.response_time": {
+          "min": 6,
+          "max": 125,
+          "count": 353,
+          "mean": 14.4,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.1,
+          "p90": 21.1,
+          "p95": 34.1,
+          "p99": 85.6,
+          "p999": 104.6
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 6,
+          "max": 125,
+          "count": 353,
+          "mean": 14.4,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.1,
+          "p90": 21.1,
+          "p95": 34.1,
+          "p99": 85.6,
+          "p999": 104.6
+        },
+        "vusers.session_length": {
+          "min": 1009.8,
+          "max": 1152,
+          "count": 324,
+          "mean": 1020.8,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 1022.7,
+          "p90": 1022.7,
+          "p95": 1064.4,
+          "p99": 1107.9,
+          "p999": 1130.2
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 6,
+          "max": 125,
+          "count": 353,
+          "mean": 14.4,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.1,
+          "p90": 21.1,
+          "p95": 34.1,
+          "p99": 85.6,
+          "p999": 104.6
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 6,
+          "max": 125,
+          "count": 353,
+          "mean": 14.4,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.1,
+          "p90": 21.1,
+          "p95": 34.1,
+          "p99": 85.6,
+          "p999": 104.6
+        },
+        "vusers.session_length": {
+          "min": 1009.8,
+          "max": 1152,
+          "count": 324,
+          "mean": 1020.8,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 1022.7,
+          "p90": 1022.7,
+          "p95": 1064.4,
+          "p99": 1107.9,
+          "p999": 1130.2
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.상품 목록 조회 API 테스트": 757,
+        "vusers.created": 757,
+        "http.requests": 757,
+        "http.codes.200": 745,
+        "http.responses": 745,
+        "http.downloaded_bytes": 256472210,
+        "plugins.metrics-by-endpoint./api/v1/products/all.codes.200": 745,
+        "vusers.failed": 0,
+        "vusers.completed": 697
+      },
+      "rates": {
+        "http.request_rate": 77
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291570000,
+      "firstHistogramAt": 1724291570000,
+      "lastCounterAt": 1724291579990,
+      "lastHistogramAt": 1724291579990,
+      "firstMetricAt": 1724291570000,
+      "lastMetricAt": 1724291579990,
+      "period": "1724291570000",
+      "summaries": {
+        "http.response_time": {
+          "min": 6,
+          "max": 194,
+          "count": 745,
+          "mean": 19.9,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.9,
+          "p90": 43.4,
+          "p95": 82.3,
+          "p99": 156,
+          "p999": 186.8
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 6,
+          "max": 194,
+          "count": 745,
+          "mean": 19.9,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.9,
+          "p90": 43.4,
+          "p95": 82.3,
+          "p99": 156,
+          "p999": 186.8
+        },
+        "vusers.session_length": {
+          "min": 1009.4,
+          "max": 1235.6,
+          "count": 697,
+          "mean": 1025.7,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 1022.7,
+          "p90": 1043.3,
+          "p95": 1107.9,
+          "p99": 1200.1,
+          "p999": 1224.4
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 6,
+          "max": 194,
+          "count": 745,
+          "mean": 19.9,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.9,
+          "p90": 43.4,
+          "p95": 82.3,
+          "p99": 156,
+          "p999": 186.8
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 6,
+          "max": 194,
+          "count": 745,
+          "mean": 19.9,
+          "p50": 10.1,
+          "median": 10.1,
+          "p75": 13.9,
+          "p90": 43.4,
+          "p95": 82.3,
+          "p99": 156,
+          "p999": 186.8
+        },
+        "vusers.session_length": {
+          "min": 1009.4,
+          "max": 1235.6,
+          "count": 697,
+          "mean": 1025.7,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 1022.7,
+          "p90": 1043.3,
+          "p95": 1107.9,
+          "p99": 1200.1,
+          "p999": 1224.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 599,
+        "http.codes.200": 502,
+        "http.responses": 502,
+        "http.downloaded_bytes": 172817516,
+        "plugins.metrics-by-endpoint./api/v1/products/all.codes.200": 502,
+        "vusers.created_by_name.상품 목록 조회 API 테스트": 488,
+        "vusers.created": 488,
+        "http.requests": 488
+      },
+      "rates": {
+        "http.request_rate": 100
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1724291580002,
+      "firstHistogramAt": 1724291580002,
+      "lastCounterAt": 1724291586039,
+      "lastHistogramAt": 1724291586039,
+      "firstMetricAt": 1724291580002,
+      "lastMetricAt": 1724291586039,
+      "period": "1724291580000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 1009.4,
+          "max": 1343.1,
+          "count": 599,
+          "mean": 1080.1,
+          "p50": 1043.3,
+          "median": 1043.3,
+          "p75": 1130.2,
+          "p90": 1200.1,
+          "p95": 1224.4,
+          "p99": 1326.4,
+          "p999": 1326.4
+        },
+        "http.response_time": {
+          "min": 6,
+          "max": 330,
+          "count": 502,
+          "mean": 73.9,
+          "p50": 34.1,
+          "median": 34.1,
+          "p75": 125.2,
+          "p90": 198.4,
+          "p95": 242.3,
+          "p99": 314.2,
+          "p999": 327.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 6,
+          "max": 330,
+          "count": 502,
+          "mean": 73.9,
+          "p50": 34.1,
+          "median": 34.1,
+          "p75": 125.2,
+          "p90": 198.4,
+          "p95": 242.3,
+          "p99": 314.2,
+          "p999": 327.1
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 1009.4,
+          "max": 1343.1,
+          "count": 599,
+          "mean": 1080.1,
+          "p50": 1043.3,
+          "median": 1043.3,
+          "p75": 1130.2,
+          "p90": 1200.1,
+          "p95": 1224.4,
+          "p99": 1326.4,
+          "p999": 1326.4
+        },
+        "http.response_time": {
+          "min": 6,
+          "max": 330,
+          "count": 502,
+          "mean": 73.9,
+          "p50": 34.1,
+          "median": 34.1,
+          "p75": 125.2,
+          "p90": 198.4,
+          "p95": 242.3,
+          "p99": 314.2,
+          "p999": 327.1
+        },
+        "plugins.metrics-by-endpoint.response_time./api/v1/products/all": {
+          "min": 6,
+          "max": 330,
+          "count": 502,
+          "mean": 73.9,
+          "p50": 34.1,
+          "median": 34.1,
+          "p75": 125.2,
+          "p90": 198.4,
+          "p95": 242.3,
+          "p99": 314.2,
+          "p999": 327.1
+        }
+      }
+    }
+  ]
+}

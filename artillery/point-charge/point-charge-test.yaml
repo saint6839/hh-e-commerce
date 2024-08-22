@@ -1,0 +1,25 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 30
+      arrivalRate: 20
+      name: '초기 600명 사용자'
+    - duration: 30
+      arrivalRate: 50
+      name: '중간 1500명 사용자'
+    - duration: 30
+      arrivalRate: 100
+      name: '최대 3000명 사용자'
+  processor: './user-point.js'
+
+scenarios:
+  - name: '사용자 포인트 충전 API 테스트'
+    flow:
+      - function: 'generateRandomUserId'
+      - function: 'generateRandomAmount'
+      - post:
+          url: '/api/v1/users/balance'
+          json:
+            userId: '{{ userId }}'
+            amount: '{{ amount }}'
+      - think: 1

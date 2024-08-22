@@ -1,0 +1,22 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 10
+      arrivalRate: 10
+      name: '10초차 - 초당 10명 사용자'
+    - duration: 10
+      arrivalRate: 20
+      name: '20초차 - 초당 20명 사용자'
+    - duration: 10
+      arrivalRate: 50
+      name: '30초차 - 초당 50명 사용자'
+    - duration: 10
+      arrivalRate: 100
+      name: '40초차 - 초당 100명 사용자'
+
+scenarios:
+  - name: '상품 목록 조회 API 테스트'
+    flow:
+      - get:
+          url: '/api/v1/products/all'
+      - think: 1

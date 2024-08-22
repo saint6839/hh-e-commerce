@@ -1,0 +1,42 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 30
+      name: '점진적 증가'
+    - duration: 60
+      arrivalRate: 30
+      name: '지속적인 부하'
+  processor: './charge-order-payment-functions.js'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: '전체 상품 주문 플로우 테스트'
+    flow:
+      - function: 'generateUserData'
+      - post:
+          url: '/api/v1/users/balance'
+          json:
+            userId: 1
+            amount: '{{ chargeAmount }}'
+      - think: 1
+      - function: 'generateOrderData'
+      - post:
+          url: '/api/v1/orders'
+          json:
+            userId: 1
+            productOptions:
+              - productOptionId: '{{ productOptionId }}'
+                quantity: 1
+      - think: 1
+      - function: 'generatePaymentData'
+      - post:
+          url: '/api/v1/payments'
+          json:
+            paymentId: '{{ paymentId }}'
+            userId: '{{ userId }}'
+            mid: '{{ mid }}'
+            tid: '{{ tid }}'

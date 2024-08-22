@@ -1,0 +1,24 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 100
+      name: '30초 동안 사용자 급격히 증가 (10 -> 100)'
+    - duration: 30
+      arrivalRate: 100
+      name: '30초 동안 사용자 수 유지 (100)'
+  http:
+    timeout: 10
+  processor: './popular-products-functions.js'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: '인기 상품 목록 조회 API 테스트'
+    flow:
+      - function: 'generateDateRange'
+      - get:
+          url: '/api/v1/products/popular?from=2021-05-01&to=2024-12-31'
+      - think: 1
